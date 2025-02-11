@@ -26,6 +26,8 @@ inputs:
 outputs:
   languages:
     description: The languages of the repository as a JSON array
+  languages_codeql_format:
+    description: The languages of the repository that can be used as input for codeql languages to scan, as a JSON array
 
 runs:
   using: "node20"

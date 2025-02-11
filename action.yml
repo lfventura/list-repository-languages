@@ -1,6 +1,6 @@
-name: List Repositories Languages
+name: Repository Languages and CodeQL Support Map
 author: Austen Stone
-description: List a repositories languages using the GitHub API
+description: List a repository languages using the GitHub API and filter by CodeQL support
 branding:
   icon: "list"
   color: "blue"
@@ -28,5 +28,5 @@ outputs:
     description: The languages of the repository as a JSON array
 
 runs:
-  using: "node16"
+  using: "node20"
   main: "dist/index.js"

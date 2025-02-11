@@ -28,10 +28,7 @@ const codeqlLanguageMapping = {
 	"javascript": "javascript",
 	"typescript": "javascript",
 	"python": "python",
-	"ruby": "ruby",
-	"kotlin": "java",
-	"swift": "swift",
-	"html": "html",
+	"ruby": "ruby"
 }
 
 const run = async (): Promise<void> => {
@@ -42,7 +39,7 @@ const run = async (): Promise<void> => {
     core.debug(JSON.stringify({langResponse}))
     let languages = Object.keys(langResponse.data);
     if (input.codeql) {
-      languages = languages.filter(l => codeqlLanguageMapping[l]);
+      languages = languages.filter(l => codeqlLanguageMapping[l.toLowerCase()]);
     }
     core.setOutput('languages', JSON.stringify(languages));
   } catch (error) {

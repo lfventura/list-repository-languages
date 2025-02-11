@@ -28,7 +28,10 @@ const codeqlLanguageMapping = {
 	"javascript": "javascript",
 	"typescript": "javascript",
 	"python": "python",
-	"ruby": "ruby"
+	"ruby": "ruby",
+	"kotlin": "java",
+	"swift": "swift",
+	"html": "html",
 }
 
 const run = async (): Promise<void> => {

@@ -37,7 +37,7 @@ export async function run(): Promise<void> {
 
     let languages_codeql_output = languages_codeql_format.map(language => ({
       language: language,
-      build_mode: "none"
+      "build-mode": "none"
     }));
 
     core.setOutput('languages_codeql', JSON.stringify(languages_codeql_output));

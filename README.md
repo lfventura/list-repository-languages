@@ -84,9 +84,12 @@ Various inputs are defined in [`action.yml`](action.yml):
 | languages_repo | The languages of the repository as a JSON array |
 | languages_codeql | The languages of the repository as a JSON array for CodeQL Matrix without Build Mode set |
 | languages_codeql_w_buildmode | The languages of the repository as a JSON array for CodeQL Matrix with Build Mode set |
-| languages_codeql_manual_buildmode | The languages of the repository with manual build set and which command should be ran for this language |
 | codeql_supported | Bool that indicates if there are supported languages by CodeQL |
 
+
+## Examples
+
+Check .github/workflow folder for some examples on how to use.
 
 ## Further help
 To get more help on the Actions see [documentation](https://docs.github.com/en/actions).

@@ -16,11 +16,20 @@ jobs:
       languages_codeql: ${{ steps.list-languages.outputs.languages_codeql }}
       codeql_supported: ${{ steps.list-languages.outputs.codeql_supported }}
 
-  print:
+  print_matrix_language_only:
     needs: [run]
     runs-on: ubuntu-latest
     strategy:
       matrix:
         language: ${{ fromJSON(needs.run.outputs.languages_codeql) }}
+    steps:
+      - run: echo ${{ matrix.language }}
+
+  print_matrix_with_buildmode:
+    needs: [run]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include: ${{ fromJSON(needs.run.outputs.languages_codeql_w_buildmode) }}
     steps:
       - run: echo ${{ matrix.language }}

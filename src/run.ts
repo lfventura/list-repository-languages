@@ -34,14 +34,11 @@ const codeqlLanguageMapping = {
 const run = async (): Promise<void> => {
   try {
     const input = getInputs();
-    const octokit: ReturnType<typeof github.getOctokit> = github.getOctokit(input.token);
-    const langResponse = await octokit.request(`GET /repos/${input.owner}/${input.repo}/languages`);
-    core.debug(JSON.stringify({langResponse}))
-    let languages = Object.keys(langResponse.data);
+    let languages = "Not CodeQL";
     if (input.codeql) {
-      languages = languages.filter(l => codeqlLanguageMapping[l.toLowerCase()]);
+      languages = "I am COdeQL";
     }
-    core.setOutput('languages', JSON.stringify(languages.map(l => l.toLowerCase())));
+    core.setOutput('languages', languages);
   } catch (error) {
     core.startGroup(error instanceof Error ? error.message : JSON.stringify(error));
     core.info(JSON.stringify(error, null, 2));

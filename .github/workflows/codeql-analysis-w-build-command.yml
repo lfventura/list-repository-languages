@@ -16,7 +16,7 @@ jobs:
   languages:
     runs-on: ubuntu-latest
     steps:
-      - uses: lfventura/list-repository-languages@lv_teste
+      - uses: lfventura/list-repository-languages@main
         id: list-languages
         with:
           buildmode_js: 'manual'

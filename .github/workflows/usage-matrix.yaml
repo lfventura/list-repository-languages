@@ -14,6 +14,7 @@ jobs:
     outputs:
       languages_repo: ${{ steps.list-languages.outputs.languages_repo }}
       languages_codeql: ${{ steps.list-languages.outputs.languages_codeql }}
+      languages_codeql_w_buildmode: ${{ steps.list-languages.outputs.languages_codeql_w_buildmode }}
       codeql_supported: ${{ steps.list-languages.outputs.codeql_supported }}
 
   print_matrix_language_only:

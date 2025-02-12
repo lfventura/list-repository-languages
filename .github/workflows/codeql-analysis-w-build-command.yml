@@ -1,4 +1,4 @@
-name: "CodeQL"
+name: "CodeQL with Build Command"
 
 on:
   push:

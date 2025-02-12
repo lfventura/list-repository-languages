@@ -46,12 +46,10 @@ jobs:
       - run: echo ${{ matrix.language }}
 ```
 ### CodeQL
-You can use the input `codeql` to map languages to codeql supported languages. [example](https://github.com/austenstone/.github/blob/main/.github/workflows/codeql.yml).
+You can use the output `languages_codeql` to map languages to codeql supported languages. [example](https://github.com/lfventura/.github/blob/main/.github/workflows/codeql.yml).
 ```yml
-      - uses: austenstone/list-repository-languages@main
+      - uses: lfventura/list-repository-languages@main
         id: list-languages
-        with:
-          codeql: 'true'
 ```
 
 ## ➡️ Inputs
@@ -62,14 +60,22 @@ Various inputs are defined in [`action.yml`](action.yml):
 | github&#x2011;token | Token to use to authorize. | ${{&nbsp;github.token&nbsp;}} |
 | owner | The repository owner | ${{ github.repository_owner }} |
 | repo | The repository name | ${{ github.event.repository.name }} |
-| codeql | Map to langauges supported by codeql | false |
 
 
 ## ⬅️ Outputs
 | Name | Description |
 | --- | - |
 | languages | The languages of the repository as a JSON array |
+| languages_codeql | The languages of the repository as a JSON array for CodeQL Matrix |
+| codeql_supported | Bool that indicates if there are supported languages by CodeQL |
 
 
 ## Further help
 To get more help on the Actions see [documentation](https://docs.github.com/en/actions).
+
+## Some other useful info
+
+- You can test the module locally:
+  - npx local-action . src/run.ts .env
+- Easy way to update packages:
+  - npm install -g npm-check-updates && ncu && ncu -u

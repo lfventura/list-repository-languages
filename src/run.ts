@@ -8,11 +8,13 @@ import * as github from '@actions/github';
  */
 export async function run(): Promise<void> {
   try {
-    const token: string = core.getInput('github-token')
+    const token: string = core.getInput('github_token')
     const owner: string = core.getInput('owner')
     const repo: string = core.getInput('repo')
 
     const codeqlLanguageMapping: { [key: string]: string } = {
+      // https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning#changing-the-languages-that-are-analyzed
+      // https://aka.ms/codeql-docs/language-support
       "c": "c-cpp",
       "c++": "c-cpp",
       "cpp": "c-cpp",
@@ -33,6 +35,7 @@ export async function run(): Promise<void> {
     let languages_codeql_format = Array.from(new Set(languages.map(l => codeqlLanguageMapping[l.toLowerCase()]).filter(l => l)));
     core.setOutput('languages_repo', JSON.stringify(languages.map(l => l.toLowerCase())));
     core.setOutput('languages_codeql', JSON.stringify(languages_codeql_format));
+    core.setOutput('codeql_supported', JSON.stringify(languages_codeql_format.length > 0));
 
   } catch (error) {
     // Fail the workflow run if an error occurs

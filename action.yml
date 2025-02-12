@@ -6,7 +6,7 @@ branding:
   color: "blue"
 
 inputs:
-  github-token:
+  github_token:
     description: The GitHub token used to create an authenticated client
     default: ${{ github.token }}
     required: false
@@ -24,6 +24,8 @@ outputs:
     description: The languages of the repository as a JSON array
   languages_codeql:
     description: The languages of the repository with CodeQL support as a JSON array, already formatted in the name that is identified by codeql
+  codeql_supported:
+    description: Bool that indicates if there are supported languages by CodeQL 
 
 runs:
   using: "node20"

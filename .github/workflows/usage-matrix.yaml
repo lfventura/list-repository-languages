@@ -8,17 +8,19 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./
         id: list-languages
     outputs:
-      languages: ${{ steps.list-languages.outputs.languages }}
+      languages_repo: ${{ steps.list-languages.outputs.languages_repo }}
+      languages_codeql: ${{ steps.list-languages.outputs.languages_codeql }}
+      codeql_supported: ${{ steps.list-languages.outputs.codeql_supported }}
 
   print:
     needs: [run]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        language: ${{ fromJSON(needs.run.outputs.languages) }}
+        language: ${{ fromJSON(needs.run.outputs.languages_codeql) }}
     steps:
       - run: echo ${{ matrix.language }}

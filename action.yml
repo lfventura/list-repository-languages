@@ -42,6 +42,30 @@ inputs:
   buildmode_swift:
     description: The build mode for Swift projects
     required: false
+  buildmode_manual_cpp:
+    description: The command to build cpp projects when build mode is set to manual
+    required: false
+  buildmode_manual_csharp:
+    description: The command to build csharp projects when build mode is set to manual
+    required: false
+  buildmode_manual_go:
+    description: The command to build go projects when build mode is set to manual
+    required: false
+  buildmode_manual_javakotlin:
+    description: The command to build java projects when build mode is set to manual
+    required: false
+  buildmode_manual_js:
+    description: The command to build javascript-typescript projects when build mode is set to manual
+    required: false
+  buildmode_manual_python:
+    description: The command to build python projects when build mode is set to manual
+    required: false
+  buildmode_manual_ruby:
+    description: The command to build ruby projects when build mode is set to manual
+    required: false
+  buildmode_manual_swift:
+    description: The command to build swift projects when build mode is set to manual
+    required: false
 
 outputs:
   languages:

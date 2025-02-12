@@ -16,7 +16,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/list-repository-languages@main
+      - uses: lfventura/list-repository-languages@main
         id: list-languages
       - run: echo ${{ join(fromJSON(steps.list-languages.outputs.languages), ', ') }}
 ```
@@ -31,7 +31,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/list-repository-languages@main
+      - uses: lfventura/list-repository-languages@main
         id: list-languages
     outputs:
       languages: ${{ steps.list-languages.outputs.languages }}
@@ -46,9 +46,9 @@ jobs:
       - run: echo ${{ matrix.language }}
 ```
 ### CodeQL
-You can use the input `codeql` to map languages to codeql supported languages. [example](https://github.com/austenstone/.github/blob/main/.github/workflows/codeql.yml).
+You can use the input `codeql` to map languages to codeql supported languages. [example](https://github.com/lfventura/.github/blob/main/.github/workflows/codeql.yml).
 ```yml
-      - uses: austenstone/list-repository-languages@main
+      - uses: lfventura/list-repository-languages@main
         id: list-languages
         with:
           codeql: 'true'

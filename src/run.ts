@@ -38,7 +38,7 @@ const run = async (): Promise<void> => {
     const langResponse = await octokit.request(`GET /repos/${input.owner}/${input.repo}/languages`);
     core.debug(JSON.stringify({langResponse}))
     let languages = Object.keys(langResponse.data);
-    let languages_codeql_format = Array.from(new Set(languages.map(l => codeqlLanguageMapping[l.toLowerCase()]).filter(l => l)));
+    let languages_codeql_format = Array.from(new Set(languages.map(l => codeqlLanguageMapping[l.toLowerCase()])));
     if (input.codeql) {
       languages = languages.filter(l => codeqlLanguageMapping[l.toLowerCase()]);
       core.setOutput('languages_codeql_format', JSON.stringify(languages_codeql_format));

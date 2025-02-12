@@ -19,7 +19,7 @@
   "readme": "README.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/austenstone/action-typescript.git"
+    "url": "https://github.com/lfventura/action-typescript.git"
   },
   "license": "MIT",
   "dependencies": {

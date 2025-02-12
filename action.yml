@@ -18,6 +18,30 @@ inputs:
     description: The name of the repository
     default: ${{ github.event.repository.name }}
     required: false
+  buildmode_cpp:
+    description: The build mode for C/C++ projects
+    required: false
+  buildmode_csharp:
+    description: The build mode for C# projects
+    required: false
+  buildmode_go:
+    description: The build mode for Go projects
+    required: false
+  buildmode_javakotlin:
+    description: The build mode for Java projects
+    required: false
+  buildmode_js:
+    description: The build mode for javascript-typescript projects
+    required: false
+  buildmode_python:
+    description: The build mode for Python projects
+    required: false
+  buildmode_ruby:
+    description: The build mode for Ruby projects
+    required: false
+  buildmode_swift:
+    description: The build mode for Swift projects
+    required: false
 
 outputs:
   languages:

@@ -16,9 +16,9 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/list-repository-languages@main
+      - uses: lfventura/list-repository-languages@main
         id: list-languages
-      - run: echo ${{ join(fromJSON(steps.list-languages.outputs.languages), ', ') }}
+      - run: echo ${{ join(fromJSON(steps.list-languages.outputs.languages_repo), ', ') }}
 ```
 #### Example Matrix
 Run a a matrix of jobs for each language.
@@ -31,17 +31,17 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/list-repository-languages@main
+      - uses: lfventura/list-repository-languages@main
         id: list-languages
     outputs:
-      languages: ${{ steps.list-languages.outputs.languages }}
+      languages_codeql: ${{ steps.list-languages.outputs.languages_codeql }}
 
   print:
     needs: [run]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        language: ${{ fromJSON(needs.run.outputs.languages) }}
+        language: ${{ fromJSON(needs.run.outputs.languages_codeql) }}
     steps:
       - run: echo ${{ matrix.language }}
 ```

@@ -1,5 +1,5 @@
 name: Repository Languages and CodeQL Support Map
-author: Austen Stone / Lucas Ventura
+author: Lucas Ventura / Austen Stone
 description: List a repository languages using the GitHub API and filter by CodeQL support
 branding:
   icon: "list"
@@ -18,12 +18,62 @@ inputs:
     description: The name of the repository
     default: ${{ github.event.repository.name }}
     required: false
+  buildmode_cpp:
+    description: The build mode for C/C++ projects
+    required: false
+  buildmode_csharp:
+    description: The build mode for C# projects
+    required: false
+  buildmode_go:
+    description: The build mode for Go projects
+    required: false
+  buildmode_javakotlin:
+    description: The build mode for Java projects
+    required: false
+  buildmode_js:
+    description: The build mode for javascript-typescript projects
+    required: false
+  buildmode_python:
+    description: The build mode for Python projects
+    required: false
+  buildmode_ruby:
+    description: The build mode for Ruby projects
+    required: false
+  buildmode_swift:
+    description: The build mode for Swift projects
+    required: false
+  buildmode_manual_cpp:
+    description: The command to build cpp projects when build mode is set to manual
+    required: false
+  buildmode_manual_csharp:
+    description: The command to build csharp projects when build mode is set to manual
+    required: false
+  buildmode_manual_go:
+    description: The command to build go projects when build mode is set to manual
+    required: false
+  buildmode_manual_javakotlin:
+    description: The command to build java projects when build mode is set to manual
+    required: false
+  buildmode_manual_js:
+    description: The command to build javascript-typescript projects when build mode is set to manual
+    required: false
+  buildmode_manual_python:
+    description: The command to build python projects when build mode is set to manual
+    required: false
+  buildmode_manual_ruby:
+    description: The command to build ruby projects when build mode is set to manual
+    required: false
+  buildmode_manual_swift:
+    description: The command to build swift projects when build mode is set to manual
+    required: false
 
 outputs:
-  languages:
+  languages_repo:
     description: The languages of the repository as a JSON array
   languages_codeql:
     description: The languages of the repository with CodeQL support as a JSON array, already formatted in the name that is identified by codeql
+  languages_codeql_w_buildmode:
+    description: The languages of the repository with CodeQL support as a JSON array, already formatted in the name that is identified by codeql and the build mode
   codeql_supported:
     description: Bool that indicates if there are supported languages by CodeQL 
 

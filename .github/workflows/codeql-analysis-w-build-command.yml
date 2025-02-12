@@ -1,4 +1,4 @@
-name: "CodeQL Simpler"
+name: "CodeQL with Build Command"
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '33 14 2 * *'
+    - cron: '33 14 1 * *'
 
 # jobs:
 #   codeql:
@@ -16,10 +16,14 @@ jobs:
   languages:
     runs-on: ubuntu-latest
     steps:
-      - uses: lfventura/list-repository-languages@main
+      - uses: lfventura/list-repository-languages@lv_teste
         id: list-languages
+        with:
+          buildmode_js: 'manual'
+          buildmode_manual_js: 'bash .github/workflows/build_script.sh'
+
     outputs:
-      languages_codeql: ${{ steps.list-languages.outputs.languages_codeql }}
+      languages_codeql_w_buildmode: ${{ steps.list-languages.outputs.languages_codeql_w_buildmode }}
       codeql_supported: ${{ steps.list-languages.outputs.codeql_supported }}
 
   analyze:
@@ -35,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ${{ fromJSON(needs.languages.outputs.languages_codeql) }}
+        include: ${{ fromJSON(needs.languages.outputs.languages_codeql_w_buildmode) }}
 
     steps:
     - name: Checkout repository
@@ -56,17 +60,11 @@ jobs:
         
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+    - if: matrix.build-mode == 'manual'
+      shell: bash
+      run: ${{ matrix.manual-build-command }}
 
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
-
-    #   If the Autobuild fails above, remove it and uncomment the following three lines. 
-    #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
-
-    # - run: |
-    #   echo "Run, Build Application using script"
-    #   ./location_of_script_within_repo/buildscript.sh
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"

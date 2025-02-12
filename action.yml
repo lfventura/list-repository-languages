@@ -1,5 +1,5 @@
 name: Repository Languages and CodeQL Support Map
-author: Austen Stone
+author: Austen Stone / Lucas Ventura
 description: List a repository languages using the GitHub API and filter by CodeQL support
 branding:
   icon: "list"
@@ -18,14 +18,12 @@ inputs:
     description: The name of the repository
     default: ${{ github.event.repository.name }}
     required: false
-  codeql:
-    description: Filter the languages to only those that are supported by CodeQL
-    default: 'false'
-    required: false
 
 outputs:
   languages:
     description: The languages of the repository as a JSON array
+  languages_codeql:
+    description: The languages of the repository with CodeQL support as a JSON array, already formatted in the name that is identified by codeql
 
 runs:
   using: "node20"

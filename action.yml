@@ -68,10 +68,12 @@ inputs:
     required: false
 
 outputs:
-  languages:
+  languages_repo:
     description: The languages of the repository as a JSON array
   languages_codeql:
     description: The languages of the repository with CodeQL support as a JSON array, already formatted in the name that is identified by codeql
+  languages_codeql_w_buildmode:
+    description: The languages of the repository with CodeQL support as a JSON array, already formatted in the name that is identified by codeql and the build mode
   codeql_supported:
     description: Bool that indicates if there are supported languages by CodeQL 
 

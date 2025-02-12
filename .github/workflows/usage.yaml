@@ -11,6 +11,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./
         id: list-languages
+        # with:
+        #   github_token: ${{ secrets.GITHUB_TOKEN }}
+        #   owner: lfventura
+        #   repo: list-repository-languages
+
       - run: |
           echo "Languages Repo: ${{ steps.list-languages.outputs.languages_repo }}"
           echo "Languages CodeQL: ${{ steps.list-languages.outputs.languages_codeql }}"

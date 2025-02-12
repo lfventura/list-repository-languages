@@ -93,7 +93,7 @@ export async function run(): Promise<void> {
     let languages_codeql_output = languages_codeql_format.map(language => ({
       language: language,
       "build-mode": codeqlBuildmodeMapping[language],
-      // "manual-build-command": customManualBuildmodeCommand[language] || ""
+      "manual-build-command": customManualBuildmodeCommand[language] || ""
     }));
 
     core.setOutput('languages_repo', JSON.stringify(languages.map(l => l.toLowerCase())));

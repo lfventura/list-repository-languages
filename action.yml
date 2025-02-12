@@ -1,5 +1,5 @@
 name: Repository Languages and CodeQL Support Map
-author: Austen Stone / Lucas Ventura
+author: Lucas Ventura / Austen Stone
 description: List a repository languages using the GitHub API and filter by CodeQL support
 branding:
   icon: "list"

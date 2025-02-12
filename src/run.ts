@@ -34,7 +34,13 @@ export async function run(): Promise<void> {
     let languages: string[] = Object.keys(langResponse.data);
     let languages_codeql_format = Array.from(new Set(languages.map(l => codeqlLanguageMapping[l.toLowerCase()]).filter(l => l)));
     core.setOutput('languages_repo', JSON.stringify(languages.map(l => l.toLowerCase())));
-    core.setOutput('languages_codeql', JSON.stringify(languages_codeql_format));
+
+    let languages_codeql_output = languages_codeql_format.map(language => ({
+      language: language,
+      build_mode: "none"
+    }));
+
+    core.setOutput('languages_codeql', JSON.stringify(languages_codeql_output));
     core.setOutput('codeql_supported', JSON.stringify(languages_codeql_format.length > 0));
 
   } catch (error) {

@@ -77,6 +77,14 @@ export async function run(): Promise<void> {
       "swift": core.getInput('buildmode_manual_swift') || defaultBuildModeManualCommand,
     }
 
+    // If there is a custom manual build mode command, update the default manual build mode command mapping
+    let customManualBuildmodeCommand : { [key: string]: string } = {}
+    for (const language in customBuildmode) {
+      if (customBuildmode[language] == "manual") {
+        customManualBuildmodeCommand[language] = manualBuildmodeCommand[language]
+      }
+    }
+
     const octokit: ReturnType<typeof github.getOctokit> = github.getOctokit(token);
     const langResponse = await octokit.request(`GET /repos/${owner}/${repo}/languages`);
     core.debug(JSON.stringify({langResponse}))
@@ -85,7 +93,7 @@ export async function run(): Promise<void> {
     let languages_codeql_output = languages_codeql_format.map(language => ({
       language: language,
       "build-mode": codeqlBuildmodeMapping[language],
-      "manual-build-command": manualBuildmodeCommand[language]
+      // "manual-build-command": customManualBuildmodeCommand[language] || ""
     }));
 
     core.setOutput('languages_repo', JSON.stringify(languages.map(l => l.toLowerCase())));

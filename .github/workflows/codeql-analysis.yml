@@ -18,6 +18,9 @@ jobs:
     steps:
       - uses: lfventura/list-repository-languages@main
         id: list-languages
+    outputs:
+      languages_codeql: ${{ steps.list-languages.outputs.languages_codeql }}
+      codeql_supported: ${{ steps.list-languages.outputs.codeql_supported }}
 
   analyze:
     if: needs.languages.outputs.codeql_supported == 'true'

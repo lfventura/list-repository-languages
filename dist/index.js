@@ -29988,7 +29988,7 @@ async function run() {
         let codeqlBuildmodeMapping = {
             "c-cpp": "none",
             "csharp": "none",
-            "go": "none",
+            "go": "autobuild",
             "java-kotlin": "none",
             "javascript-typescript": "none",
             "python": "none",

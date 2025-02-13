@@ -34,7 +34,7 @@ export async function run(): Promise<void> {
     let codeqlBuildmodeMapping: { [key: string]: string } = {
       "c-cpp": "none",
       "csharp": "none",
-      "go": "none",
+      "go": "autobuild",
       "java-kotlin": "none",
       "javascript-typescript": "none",
       "python": "none",

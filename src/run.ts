@@ -28,6 +28,7 @@ export async function run(): Promise<void> {
       "python": "python",
       "ruby": "ruby",
       "swift": "swift",
+      "html": "javascript-typescript",
     }
 
     // Mapping between the CodeQL languages and the default build mode for CodeQL
@@ -40,6 +41,7 @@ export async function run(): Promise<void> {
       "python": "none",
       "ruby": "none",
       "swift": "none",
+      "html": "none",
     }
 
     // If there is an input for the module passing a custom build mode, store on this transitive const

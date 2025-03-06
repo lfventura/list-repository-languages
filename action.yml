@@ -130,6 +130,30 @@ inputs:
   precommands_swift:
     description: The pre-commands to run before building swift projects
     required: false
+  envvars_cpp:
+    description: The environment variables to set before building cpp projects
+    required: false
+  envvars_csharp:
+    description: The environment variables to set before building csharp projects
+    required: false
+  envvars_go:
+    description: The environment variables to set before building go projects
+    required: false
+  envvars_javakotlin:
+    description: The environment variables to set before building java projects
+    required: false
+  envvars_js:
+    description: The environment variables to set before building javascript-typescript projects
+    required: false
+  envvars_python:
+    description: The environment variables to set before building python projects
+    required: false
+  envvars_ruby:
+    description: The environment variables to set before building ruby projects
+    required: false
+  envvars_swift:
+    description: The environment variables to set before building swift projects
+    required: false
 
 outputs:
   languages_repo:

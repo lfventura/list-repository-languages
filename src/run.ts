@@ -97,7 +97,7 @@ export async function run(): Promise<void> {
       }
     }
 
-    // Control variable to indicate to actions if a VPN Connection needs to be established for the analysis
+    // PreCommands that should be ran before CodeQL analysis
     const defaultPreCommand : string = "echo 'No pre-command defined'"
     const preCommands : { [key: string]: string } = {
       "c-cpp": core.getInput('precommands_cpp') || defaultPreCommand,
@@ -110,6 +110,17 @@ export async function run(): Promise<void> {
       "swift": core.getInput('precommands_swift') || defaultPreCommand,
     }
 
+    const buildEnvVars: { [language: string]: { [env_name: string]: string }[] } = {
+      "c-cpp": core.getInput('envvars_cpp') ? JSON.parse(core.getInput('envvars_cpp')) : [],
+      "csharp": core.getInput('envvars_csharp') ? JSON.parse(core.getInput('envvars_csharp')) : [],
+      "go": core.getInput('envvars_go') ? JSON.parse(core.getInput('envvars_go')) : [],
+      "java-kotlin": core.getInput('envvars_javakotlin') ? JSON.parse(core.getInput('envvars_javakotlin')) : [],
+      "javascript-typescript": core.getInput('envvars_js') ? JSON.parse(core.getInput('envvars_js')) : [],
+      "python": core.getInput('envvars_python') ? JSON.parse(core.getInput('envvars_python')) : [],
+      "ruby": core.getInput('envvars_ruby') ? JSON.parse(core.getInput('envvars_ruby')) : [],
+      "swift": core.getInput('envvars_swift') ? JSON.parse(core.getInput('envvars_swift')) : [],
+    };
+
     const octokit: ReturnType<typeof github.getOctokit> = github.getOctokit(token);
     const langResponse = await octokit.request(`GET /repos/${owner}/${repo}/languages`);
     core.debug(JSON.stringify({langResponse}))
@@ -120,7 +131,8 @@ export async function run(): Promise<void> {
       "build-mode": codeqlBuildmodeMapping[language],
       "manual-build-command": customManualBuildmodeCommand[language] || "",
       "vpn-connection": vpnConnection[language] || false,
-      "pre-commands": preCommands[language] || defaultPreCommand
+      "pre-commands": preCommands[language] || defaultPreCommand,
+      "env-vars": buildEnvVars[language] || {}
     }));
 
     core.setOutput('languages_repo', JSON.stringify(languages.map(l => l.toLowerCase())));

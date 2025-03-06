@@ -92,15 +92,21 @@ Various inputs are defined in [`action.yml`](action.yml):
 | precommands_python | Commands that needs to be run before CodeQL Analysis for CPP | none |
 | precommands_ruby | Commands that needs to be run before CodeQL Analysis for CPP | none |
 | precommands_swift | Commands that needs to be run before CodeQL Analysis for CPP | none |
-
-
+| envvars_cpp | Env vars in a JSON format with the variables that should be used for build | {} |
+| envvars_csharp | Env vars in a JSON format with the variables that should be used for build | {} | 
+| envvars_go | Env vars in a JSON format with the variables that should be used for build | {} | 
+| envvars_javakotlin | Env vars in a JSON format with the variables that should be used for build | {} | 
+| envvars_js | Env vars in a JSON format with the variables that should be used for build | {} | 
+| envvars_python | Env vars in a JSON format with the variables that should be used for build | {} | 
+| envvars_ruby | Env vars in a JSON format with the variables that should be used for build | {} | 
+| envvars_swift | Env vars in a JSON format with the variables that should be used for build | {} | 
 
 ## ⬅️ Outputs
 | Name | Description |
 | --- | - |
 | languages_repo | The languages of the repository as an array |
 | languages_codeql | The languages of the repository as an array for CodeQL Matrix without Build Mode set |
-| languages_codeql_w_buildmode | The languages of the repository as a JSON array ([{language: string, build-mode: string, manual-build-command: string, vpn-connection: boolean, pre-commands: string}]) for CodeQL Matrix with Build Mode set |
+| languages_codeql_w_buildmode | The languages of the repository as a JSON array ([{language: string, build-mode: string, manual-build-command: string, vpn-connection: boolean, pre-commands: string, env-vars: {}}]) for CodeQL Matrix with Build Mode set |
 | codeql_supported | Bool that indicates if there are supported languages by CodeQL |
 
 ## Examples

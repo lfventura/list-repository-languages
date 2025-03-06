@@ -106,6 +106,30 @@ inputs:
   buildmode_manual_swift:
     description: The command to build swift projects when build mode is set to manual
     required: false
+  precommands_cpp:
+    description: The pre-commands to run before building cpp projects
+    required: false
+  precommands_csharp:
+    description: The pre-commands to run before building csharp projects
+    required: false
+  precommands_go:
+    description: The pre-commands to run before building go projects
+    required: false
+  precommands_javakotlin:
+    description: The pre-commands to run before building java projects
+    required: false
+  precommands_js:
+    description: The pre-commands to run before building javascript-typescript projects
+    required: false
+  precommands_python:
+    description: The pre-commands to run before building python projects
+    required: false
+  precommands_ruby:
+    description: The pre-commands to run before building ruby projects
+    required: false
+  precommands_swift:
+    description: The pre-commands to run before building swift projects
+    required: false
 
 outputs:
   languages_repo:

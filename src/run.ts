@@ -97,6 +97,19 @@ export async function run(): Promise<void> {
       }
     }
 
+    // Control variable to indicate to actions if a VPN Connection needs to be established for the analysis
+    const defaultPreCommand : string = "echo 'No pre-command defined'"
+    const preCommands : { [key: string]: string } = {
+      "c-cpp": core.getInput('precommands_cpp') || defaultPreCommand,
+      "c-sharp": core.getInput('precommands_csharp') || defaultPreCommand,
+      "go": core.getInput('precommands_go') || defaultPreCommand,
+      "java-kotlin": core.getInput('precommands_javakotlin') || defaultPreCommand,
+      "javascript-typescript": core.getInput('precommands_js') || defaultPreCommand,
+      "python": core.getInput('precommands_python') || defaultPreCommand,
+      "ruby": core.getInput('precommands_ruby') || defaultPreCommand,
+      "swift": core.getInput('precommands_swift') || defaultPreCommand,
+    }
+
     const octokit: ReturnType<typeof github.getOctokit> = github.getOctokit(token);
     const langResponse = await octokit.request(`GET /repos/${owner}/${repo}/languages`);
     core.debug(JSON.stringify({langResponse}))
@@ -107,6 +120,7 @@ export async function run(): Promise<void> {
       "build-mode": codeqlBuildmodeMapping[language],
       "manual-build-command": customManualBuildmodeCommand[language] || "",
       "vpn-connection": vpnConnection[language] || false,
+      "pre-commands": preCommands[language] || defaultPreCommand
     }));
 
     core.setOutput('languages_repo', JSON.stringify(languages.map(l => l.toLowerCase())));

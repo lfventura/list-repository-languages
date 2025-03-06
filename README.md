@@ -84,6 +84,15 @@ Various inputs are defined in [`action.yml`](action.yml):
 | buildmode_manual_python | Build command to be run when manual build mode set for Python | none |
 | buildmode_manual_ruby | Build command to be run when manual build mode set for Ruby | none |
 | buildmode_manual_swift | Build command to be run when manual build mode set for Swift | none |
+| precommands_cpp | Commands that needs to be run before CodeQL Analysis for CPP | none |
+| precommands_csharp | Commands that needs to be run before CodeQL Analysis for CPP | none |
+| precommands_go | Commands that needs to be run before CodeQL Analysis for CPP | none |
+| precommands_javakotlin | Commands that needs to be run before CodeQL Analysis for CPP | none |
+| precommands_js | Commands that needs to be run before CodeQL Analysis for CPP | none |
+| precommands_python | Commands that needs to be run before CodeQL Analysis for CPP | none |
+| precommands_ruby | Commands that needs to be run before CodeQL Analysis for CPP | none |
+| precommands_swift | Commands that needs to be run before CodeQL Analysis for CPP | none |
+
 
 
 ## ⬅️ Outputs
@@ -91,7 +100,7 @@ Various inputs are defined in [`action.yml`](action.yml):
 | --- | - |
 | languages_repo | The languages of the repository as an array |
 | languages_codeql | The languages of the repository as an array for CodeQL Matrix without Build Mode set |
-| languages_codeql_w_buildmode | The languages of the repository as a JSON array ([{language: string, build-mode: string, manual-build-command: string, vpn-connection: boolean}]) for CodeQL Matrix with Build Mode set |
+| languages_codeql_w_buildmode | The languages of the repository as a JSON array ([{language: string, build-mode: string, manual-build-command: string, vpn-connection: boolean, pre-commands: string}]) for CodeQL Matrix with Build Mode set |
 | codeql_supported | Bool that indicates if there are supported languages by CodeQL |
 
 ## Examples

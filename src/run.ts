@@ -98,7 +98,7 @@ export async function run(): Promise<void> {
     }
 
     // PreCommands that should be ran before CodeQL analysis
-    const defaultPreCommand : string = "echo 'No pre-command defined'"
+    const defaultPreCommand : string = ""
     const preCommands : { [key: string]: string } = {
       "c-cpp": core.getInput('precommands_cpp') || defaultPreCommand,
       "c-sharp": core.getInput('precommands_csharp') || defaultPreCommand,
@@ -111,14 +111,14 @@ export async function run(): Promise<void> {
     }
 
     const buildEnvVars: { [language: string]: { [env_name: string]: string }[] } = {
-      "c-cpp": core.getInput('envvars_cpp') ? JSON.parse(core.getInput('envvars_cpp')) : [],
-      "csharp": core.getInput('envvars_csharp') ? JSON.parse(core.getInput('envvars_csharp')) : [],
-      "go": core.getInput('envvars_go') ? JSON.parse(core.getInput('envvars_go')) : [],
-      "java-kotlin": core.getInput('envvars_javakotlin') ? JSON.parse(core.getInput('envvars_javakotlin')) : [],
-      "javascript-typescript": core.getInput('envvars_js') ? JSON.parse(core.getInput('envvars_js')) : [],
-      "python": core.getInput('envvars_python') ? JSON.parse(core.getInput('envvars_python')) : [],
-      "ruby": core.getInput('envvars_ruby') ? JSON.parse(core.getInput('envvars_ruby')) : [],
-      "swift": core.getInput('envvars_swift') ? JSON.parse(core.getInput('envvars_swift')) : [],
+      "c-cpp": core.getInput('envvars_cpp') ? JSON.parse(core.getInput('envvars_cpp')) : {},
+      "csharp": core.getInput('envvars_csharp') ? JSON.parse(core.getInput('envvars_csharp')) : {},
+      "go": core.getInput('envvars_go') ? JSON.parse(core.getInput('envvars_go')) : {},
+      "java-kotlin": core.getInput('envvars_javakotlin') ? JSON.parse(core.getInput('envvars_javakotlin')) : {},
+      "javascript-typescript": core.getInput('envvars_js') ? JSON.parse(core.getInput('envvars_js')) : {},
+      "python": core.getInput('envvars_python') ? JSON.parse(core.getInput('envvars_python')) : {},
+      "ruby": core.getInput('envvars_ruby') ? JSON.parse(core.getInput('envvars_ruby')) : {},
+      "swift": core.getInput('envvars_swift') ? JSON.parse(core.getInput('envvars_swift')) : {},
     };
 
     const octokit: ReturnType<typeof github.getOctokit> = github.getOctokit(token);

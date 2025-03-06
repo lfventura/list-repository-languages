@@ -18,6 +18,46 @@ inputs:
     description: The name of the repository
     default: ${{ github.event.repository.name }}
     required: false
+  buildvpn_cpp:
+    description: The build for C/C++ projects needs VPN Connection
+    default: false
+    required: false
+    type: boolean
+  buildvpn_csharp:
+    description: The build for C# projects needs VPN Connection
+    default: false
+    required: false
+    type: boolean
+  buildvpn_go:
+    description: The build for Go projects needs VPN Connection
+    default: false
+    required: false
+    type: boolean
+  buildvpn_javakotlin:
+    description: The build for Java projects needs VPN Connection
+    default: false
+    required: false
+    type: boolean
+  buildvpn_js:
+    description: The build for javascript-typescript projects needs VPN Connection
+    default: false
+    required: false
+    type: boolean
+  buildvpn_python:
+    description: The build for Python projects needs VPN Connection
+    default: false
+    required: false
+    type: boolean
+  buildvpn_ruby:
+    description: The build for Ruby projects needs VPN Connection
+    default: false
+    required: false
+    type: boolean
+  buildvpn_swift:
+    description: The build for Swift projects needs VPN Connection
+    default: false
+    required: false
+    type: boolean
   buildmode_cpp:
     description: The build mode for C/C++ projects
     required: false

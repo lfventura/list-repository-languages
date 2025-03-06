@@ -60,6 +60,14 @@ Various inputs are defined in [`action.yml`](action.yml):
 | github&#x2011;token | Token to use to authorize. | ${{&nbsp;github.token&nbsp;}} |
 | owner | The repository owner | ${{ github.repository_owner }} |
 | repo | The repository name | ${{ github.event.repository.name }} |
+| buildvpn_cpp | Indicates if a VPN Connection needs to be established for C++ | none |
+| buildvpn_csharp | Indicates if a VPN Connection needs to be established for C# | none |
+| buildvpn_go | Indicates if a VPN Connection needs to be established for Go | none |
+| buildvpn_javakotlin | Indicates if a VPN Connection needs to be established for Java/Kotlin | none |
+| buildvpn_js | Indicates if a VPN Connection needs to be established for JavaScript/TypeScript | none |
+| buildvpn_python | Indicates if a VPN Connection needs to be established for Python | none |
+| buildvpn_ruby | Indicates if a VPN Connection needs to be established for Ruby | none |
+| buildvpn_swift | Indicates if a VPN Connection needs to be established for Swift | none |
 | buildmode_cpp | Custom build mode for C++ | none |
 | buildmode_csharp | Custom build mode for C# | none |
 | buildmode_go | Custom build mode for Go | none |
@@ -81,11 +89,10 @@ Various inputs are defined in [`action.yml`](action.yml):
 ## ⬅️ Outputs
 | Name | Description |
 | --- | - |
-| languages_repo | The languages of the repository as a JSON array |
-| languages_codeql | The languages of the repository as a JSON array for CodeQL Matrix without Build Mode set |
-| languages_codeql_w_buildmode | The languages of the repository as a JSON array for CodeQL Matrix with Build Mode set |
+| languages_repo | The languages of the repository as an array |
+| languages_codeql | The languages of the repository as an array for CodeQL Matrix without Build Mode set |
+| languages_codeql_w_buildmode | The languages of the repository as a JSON array ([{language: string, build-mode: string, manual-build-command: string, vpn-connection: boolean}]) for CodeQL Matrix with Build Mode set |
 | codeql_supported | Bool that indicates if there are supported languages by CodeQL |
-
 
 ## Examples
 

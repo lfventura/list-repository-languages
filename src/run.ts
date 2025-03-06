@@ -42,6 +42,18 @@ export async function run(): Promise<void> {
       "swift": "none",
     }
 
+    // Control variable to indicate to actions if a VPN Connection needs to be established for the analysis
+    const vpnConnection : { [key: string]: boolean } = {
+      "c-cpp": core.getBooleanInput('buildvpn_cpp'),
+      "c-sharp": core.getBooleanInput('buildvpn_csharp'),
+      "go": core.getBooleanInput('buildvpn_go'),
+      "java-kotlin": core.getBooleanInput('buildvpn_javakotlin'),
+      "javascript-typescript": core.getBooleanInput('buildvpn_js'),
+      "python": core.getBooleanInput('buildvpn_python'),
+      "ruby": core.getBooleanInput('buildvpn_ruby'),
+      "swift": core.getBooleanInput('buildvpn_swift'),
+    }
+
     // If there is an input for the module passing a custom build mode, store on this transitive const
     const customBuildmode : { [key: string]: string } = {
       "c-cpp": core.getInput('buildmode_cpp'),
@@ -93,7 +105,8 @@ export async function run(): Promise<void> {
     let languages_codeql_output = languages_codeql_format.map(language => ({
       language: language,
       "build-mode": codeqlBuildmodeMapping[language],
-      "manual-build-command": customManualBuildmodeCommand[language] || ""
+      "manual-build-command": customManualBuildmodeCommand[language] || "",
+      "vpn-connection": vpnConnection[language] || false,
     }));
 
     core.setOutput('languages_repo', JSON.stringify(languages.map(l => l.toLowerCase())));

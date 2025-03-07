@@ -30045,16 +30045,15 @@ async function run() {
             }
         }
         // PreCommands that should be ran before CodeQL analysis
-        const defaultPreCommand = "";
         const preCommands = {
-            "c-cpp": core.getInput('precommands_cpp') || defaultPreCommand,
-            "c-sharp": core.getInput('precommands_csharp') || defaultPreCommand,
-            "go": core.getInput('precommands_go') || defaultPreCommand,
-            "java-kotlin": core.getInput('precommands_javakotlin') || defaultPreCommand,
-            "javascript-typescript": core.getInput('precommands_js') || defaultPreCommand,
-            "python": core.getInput('precommands_python') || defaultPreCommand,
-            "ruby": core.getInput('precommands_ruby') || defaultPreCommand,
-            "swift": core.getInput('precommands_swift') || defaultPreCommand,
+            "c-cpp": core.getInput('precommands_cpp') ? core.getInput('precommands_cpp').split('\n').map(cmd => cmd.trim()) : [],
+            "c-sharp": core.getInput('precommands_csharp') ? core.getInput('precommands_csharp').split('\n').map(cmd => cmd.trim()) : [],
+            "go": core.getInput('precommands_go') ? core.getInput('precommands_go').split('\n').map(cmd => cmd.trim()) : [],
+            "java-kotlin": core.getInput('precommands_javakotlin') ? core.getInput('precommands_javakotlin').split('\n').map(cmd => cmd.trim()) : [],
+            "javascript-typescript": core.getInput('precommands_js') ? core.getInput('precommands_js').split('\n').map(cmd => cmd.trim()) : [],
+            "python": core.getInput('precommands_python') ? core.getInput('precommands_python').split('\n').map(cmd => cmd.trim()) : [],
+            "ruby": core.getInput('precommands_ruby') ? core.getInput('precommands_ruby').split('\n').map(cmd => cmd.trim()) : [],
+            "swift": core.getInput('precommands_swift') ? core.getInput('precommands_swift').split('\n').map(cmd => cmd.trim()) : [],
         };
         const buildEnvVars = {
             "c-cpp": core.getInput('envvars_cpp') ? JSON.parse(core.getInput('envvars_cpp')) : {},
@@ -30076,7 +30075,7 @@ async function run() {
             "build-mode": codeqlBuildmodeMapping[language],
             "manual-build-command": customManualBuildmodeCommand[language] || "",
             "vpn-connection": vpnConnection[language] || false,
-            "pre-commands": preCommands[language] || defaultPreCommand,
+            "pre-commands": preCommands[language] || [],
             "env-vars": buildEnvVars[language] || {}
         }));
         core.setOutput('languages_repo', JSON.stringify(languages.map(l => l.toLowerCase())));

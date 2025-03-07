@@ -78,19 +78,19 @@ export async function run(): Promise<void> {
     const defaultBuildModeManualCommand : string = "echo 'When you are running manual build mode, you need to provide the build steps over input buildmode_manual_<lang> to the list-repository-languages module' && exit 1"
 
     // If there is an input for the module passing a custom manual build mode command, store on this transitive const
-    const manualBuildmodeCommand : { [key: string]: string } = {
-      "c-cpp": core.getInput('buildmode_manual_cpp') || defaultBuildModeManualCommand,
-      "csharp": core.getInput('buildmode_manual_csharp') || defaultBuildModeManualCommand,
-      "go": core.getInput('buildmode_manual_go') || defaultBuildModeManualCommand,
-      "java-kotlin": core.getInput('buildmode_manual_javakotlin') || defaultBuildModeManualCommand,
-      "javascript-typescript": core.getInput('buildmode_manual_js') || defaultBuildModeManualCommand,
-      "python": core.getInput('buildmode_manual_python') || defaultBuildModeManualCommand,
-      "ruby": core.getInput('buildmode_manual_ruby') || defaultBuildModeManualCommand,
-      "swift": core.getInput('buildmode_manual_swift') || defaultBuildModeManualCommand,
+    const manualBuildmodeCommand : { [key: string]: string[] } = {
+      "c-cpp": core.getInput('buildmode_manual_cpp') ? core.getInput('buildmode_manual_cpp').split('\n').map(cmd => cmd.trim()) : [defaultBuildModeManualCommand],
+      "csharp": core.getInput('buildmode_manual_csharp') ? core.getInput('buildmode_manual_csharp').split('\n').map(cmd => cmd.trim()) : [defaultBuildModeManualCommand],
+      "go": core.getInput('buildmode_manual_go') ? core.getInput('buildmode_manual_go').split('\n').map(cmd => cmd.trim()) : [defaultBuildModeManualCommand],
+      "java-kotlin": core.getInput('buildmode_manual_javakotlin') ? core.getInput('buildmode_manual_javakotlin').split('\n').map(cmd => cmd.trim()) : [defaultBuildModeManualCommand],
+      "javascript-typescript": core.getInput('buildmode_manual_js') ? core.getInput('buildmode_manual_js').split('\n').map(cmd => cmd.trim()) : [defaultBuildModeManualCommand],
+      "python": core.getInput('buildmode_manual_python') ? core.getInput('buildmode_manual_python').split('\n').map(cmd => cmd.trim()) : [defaultBuildModeManualCommand],
+      "ruby": core.getInput('buildmode_manual_ruby') ? core.getInput('buildmode_manual_ruby').split('\n').map(cmd => cmd.trim()) : [defaultBuildModeManualCommand],
+      "swift": core.getInput('buildmode_manual_swift') ? core.getInput('buildmode_manual_swift').split('\n').map(cmd => cmd.trim()) : [defaultBuildModeManualCommand],
     }
 
     // If there is a custom manual build mode command, update the default manual build mode command mapping
-    let customManualBuildmodeCommand : { [key: string]: string } = {}
+    let customManualBuildmodeCommand : { [key: string]: string[] } = {}
     for (const language in customBuildmode) {
       if (customBuildmode[language] == "manual") {
         customManualBuildmodeCommand[language] = manualBuildmodeCommand[language]

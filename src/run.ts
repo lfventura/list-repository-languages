@@ -56,14 +56,25 @@ export async function run(): Promise<void> {
 
     // If there is an input for the module passing a custom build mode, store on this transitive const
     const customBuildmode : { [key: string]: string } = {
-      "c-cpp": core.getInput('buildmode_cpp'),
-      "csharp": core.getInput('buildmode_csharp'),
-      "go": core.getInput('buildmode_go'),
-      "java-kotlin": core.getInput('buildmode_javakotlin'),
-      "javascript-typescript": core.getInput('buildmode_js'),
-      "python": core.getInput('buildmode_python'),
-      "ruby": core.getInput('buildmode_ruby'),
-      "swift": core.getInput('buildmode_swift'),
+      "c-cpp": core.getInput('buildmode_cpp').toLowerCase(),
+      "csharp": core.getInput('buildmode_csharp').toLowerCase(),
+      "go": core.getInput('buildmode_go').toLowerCase(),
+      "java-kotlin": core.getInput('buildmode_javakotlin').toLowerCase(),
+      "javascript-typescript": core.getInput('buildmode_js').toLowerCase(),
+      "python": core.getInput('buildmode_python').toLowerCase(),
+      "ruby": core.getInput('buildmode_ruby').toLowerCase(),
+      "swift": core.getInput('buildmode_swift').toLowerCase(),
+    }
+
+    // Languages that should be skipped from the analysis (useful for when a test is running in another tool)
+    const skipLanguages : string[] = core.getInput('skip_languages') ? core.getInput('skip_languages').split(',').map(lang => lang.trim().toLowerCase()) : []
+    // Check if skipLanguages has valid values
+    if (skipLanguages.length > 0) {
+      for (const lang of skipLanguages) {
+        if (!Object.keys(codeqlBuildmodeMapping).includes(lang)) {
+          throw new Error(`Invalid language ${lang} in skip_languages input. Valid languages are ${Object.keys(codeqlBuildmodeMapping).join(', ')}`)
+        }
+      }
     }
 
     // If there is a custom build mode, update the default build mode mapping
@@ -124,7 +135,14 @@ export async function run(): Promise<void> {
     const langResponse = await octokit.request(`GET /repos/${owner}/${repo}/languages`);
     core.debug(JSON.stringify({langResponse}))
     let languages: string[] = Object.keys(langResponse.data);
-    let languages_codeql_format = Array.from(new Set(languages.map(l => codeqlLanguageMapping[l.toLowerCase()]).filter(l => l)));
+    let languages_codeql_format = Array.from(
+      new Set(
+        languages
+        .map(l => codeqlLanguageMapping[l.toLowerCase()])
+        .filter(l => l && !skipLanguages.includes(l))
+        )
+      );
+    
     let languages_codeql_output = languages_codeql_format.map(language => ({
       language: language,
       "build-mode": codeqlBuildmodeMapping[language],
@@ -138,6 +156,7 @@ export async function run(): Promise<void> {
     core.setOutput('languages_codeql', JSON.stringify(languages_codeql_format));
     core.setOutput('languages_codeql_w_buildmode', JSON.stringify(languages_codeql_output));
     core.setOutput('codeql_supported', JSON.stringify(languages_codeql_format.length > 0));
+    core.setOutput('skip_languages', JSON.stringify(skipLanguages));
 
   } catch (error) {
     // Fail the workflow run if an error occurs

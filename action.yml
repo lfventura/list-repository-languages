@@ -154,6 +154,9 @@ inputs:
   envvars_swift:
     description: The environment variables to set before building swift projects
     required: false
+  skip_languages:
+    description: The languages to skip when building the languages map, comma separated list
+    required: false
 
 outputs:
   languages_repo:
@@ -164,6 +167,8 @@ outputs:
     description: The languages of the repository with CodeQL support as a JSON array, already formatted in the name that is identified by codeql and the build mode
   codeql_supported:
     description: Bool that indicates if there are supported languages by CodeQL 
+  skip_languages:
+    description: The languages that were skipped when building the languages map
 
 runs:
   using: "node20"

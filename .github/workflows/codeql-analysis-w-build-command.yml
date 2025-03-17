@@ -61,8 +61,12 @@ jobs:
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
     - if: matrix.build-mode == 'manual'
-      shell: bash
-      run: ${{ matrix.manual-build-command }}
+      name: Build and Analysis
+      run: |
+        echo '${{ toJSON(matrix.manual-build-command) }}' | jq -r '.[]' | while read LINE; do
+          echo "Running command: $LINE"
+          eval $LINE
+        done
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3

@@ -56,19 +56,22 @@ export async function run(): Promise<void> {
 
     // If there is an input for the module passing a custom build mode, store on this transitive const
     const customBuildmode : { [key: string]: string } = {
-      "c-cpp": core.getInput('buildmode_cpp'),
-      "csharp": core.getInput('buildmode_csharp'),
-      "go": core.getInput('buildmode_go'),
-      "java-kotlin": core.getInput('buildmode_javakotlin'),
-      "javascript-typescript": core.getInput('buildmode_js'),
-      "python": core.getInput('buildmode_python'),
-      "ruby": core.getInput('buildmode_ruby'),
-      "swift": core.getInput('buildmode_swift'),
+      "c-cpp": core.getInput('buildmode_cpp').toLowerCase(),
+      "csharp": core.getInput('buildmode_csharp').toLowerCase(),
+      "go": core.getInput('buildmode_go').toLowerCase(),
+      "java-kotlin": core.getInput('buildmode_javakotlin').toLowerCase(),
+      "javascript-typescript": core.getInput('buildmode_js').toLowerCase(),
+      "python": core.getInput('buildmode_python').toLowerCase(),
+      "ruby": core.getInput('buildmode_ruby').toLowerCase(),
+      "swift": core.getInput('buildmode_swift').toLowerCase(),
     }
+
+    // Languages that should be skipped from the analysis (useful for when a test is running in another tool)
+    const skipLanguages : string[] = core.getInput('skip_languages') ? core.getInput('skip_languages').split(',').map(lang => lang.trim().toLowerCase()) : []
 
     // If there is a custom build mode, update the default build mode mapping
     for (const language in customBuildmode) {
-      if (customBuildmode[language]) {
+      if (customBuildmode[language] && !skipLanguages.includes(language)) {
         codeqlBuildmodeMapping[language] = customBuildmode[language]
       }
     }

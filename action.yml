@@ -155,9 +155,8 @@ inputs:
     description: The environment variables to set before building swift projects
     required: false
   skip_languages:
-    description: The languages to skip when building the languages map
+    description: The languages to skip when building the languages map, comma separated list
     required: false
-    type: array
 
 outputs:
   languages_repo:

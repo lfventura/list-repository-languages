@@ -100,7 +100,7 @@ Various inputs are defined in [`action.yml`](action.yml):
 | envvars_python | Env vars in a JSON format with the variables that should be used for build | {} | 
 | envvars_ruby | Env vars in a JSON format with the variables that should be used for build | {} | 
 | envvars_swift | Env vars in a JSON format with the variables that should be used for build | {} |
-| skip_languages | The languages to skip when building the languages map. Useful if the test for a specific language is running on another tool | [] |
+| skip_languages | The languages to skip when building the languages map, comma separated list. Useful if the test for a specific language is running on another tool | none |
 
 ## ⬅️ Outputs
 | Name | Description |

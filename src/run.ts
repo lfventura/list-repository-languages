@@ -68,10 +68,18 @@ export async function run(): Promise<void> {
 
     // Languages that should be skipped from the analysis (useful for when a test is running in another tool)
     const skipLanguages : string[] = core.getInput('skip_languages') ? core.getInput('skip_languages').split(',').map(lang => lang.trim().toLowerCase()) : []
+    // Check if skipLanguages has valid values
+    if (skipLanguages.length > 0) {
+      for (const lang of skipLanguages) {
+        if (!Object.keys(codeqlBuildmodeMapping).includes(lang)) {
+          throw new Error(`Invalid language ${lang} in skip_languages input. Valid languages are ${Object.keys(codeqlBuildmodeMapping).join(', ')}`)
+        }
+      }
+    }
 
     // If there is a custom build mode, update the default build mode mapping
     for (const language in customBuildmode) {
-      if (customBuildmode[language] && !skipLanguages.includes(language)) {
+      if (customBuildmode[language]) {
         codeqlBuildmodeMapping[language] = customBuildmode[language]
       }
     }
@@ -127,7 +135,14 @@ export async function run(): Promise<void> {
     const langResponse = await octokit.request(`GET /repos/${owner}/${repo}/languages`);
     core.debug(JSON.stringify({langResponse}))
     let languages: string[] = Object.keys(langResponse.data);
-    let languages_codeql_format = Array.from(new Set(languages.map(l => codeqlLanguageMapping[l.toLowerCase()]).filter(l => l)));
+    let languages_codeql_format = Array.from(
+      new Set(
+        languages
+        .map(l => codeqlLanguageMapping[l.toLowerCase()])
+        .filter(l => l && !skipLanguages.includes(l))
+        )
+      );
+    
     let languages_codeql_output = languages_codeql_format.map(language => ({
       language: language,
       "build-mode": codeqlBuildmodeMapping[language],
@@ -141,6 +156,7 @@ export async function run(): Promise<void> {
     core.setOutput('languages_codeql', JSON.stringify(languages_codeql_format));
     core.setOutput('languages_codeql_w_buildmode', JSON.stringify(languages_codeql_output));
     core.setOutput('codeql_supported', JSON.stringify(languages_codeql_format.length > 0));
+    core.setOutput('skip_languages', JSON.stringify(skipLanguages));
 
   } catch (error) {
     // Fail the workflow run if an error occurs

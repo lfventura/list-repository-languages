@@ -99,7 +99,8 @@ Various inputs are defined in [`action.yml`](action.yml):
 | envvars_js | Env vars in a JSON format with the variables that should be used for build | {} | 
 | envvars_python | Env vars in a JSON format with the variables that should be used for build | {} | 
 | envvars_ruby | Env vars in a JSON format with the variables that should be used for build | {} | 
-| envvars_swift | Env vars in a JSON format with the variables that should be used for build | {} | 
+| envvars_swift | Env vars in a JSON format with the variables that should be used for build | {} |
+| skip_languages | The languages to skip when building the languages map. Useful if the test for a specific language is running on another tool | [] |
 
 ## ⬅️ Outputs
 | Name | Description |
@@ -108,6 +109,7 @@ Various inputs are defined in [`action.yml`](action.yml):
 | languages_codeql | The languages of the repository as an array for CodeQL Matrix without Build Mode set |
 | languages_codeql_w_buildmode | The languages of the repository as a JSON array ([{language: string, build-mode: string, manual-build-command: [], vpn-connection: boolean, pre-commands: [], env-vars: {}}]) for CodeQL Matrix with Build Mode set |
 | codeql_supported | Bool that indicates if there are supported languages by CodeQL |
+| skip_languages | The languages that were skipped when building the languages map
 
 ## Examples
 

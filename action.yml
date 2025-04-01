@@ -162,37 +162,37 @@ inputs:
     default: false
     required: false
     type: boolean
-  build_setup_csharp:
+  buildsetup_csharp:
     description: Indicates if the build for C# projects needs to have an action to setup the language before running CodeQL'
     default: false
     required: false
     type: boolean
-  build_setup_go:
+  buildsetup_go:
     description: Indicates if the build for Go projects needs to have an action to setup the language before running CodeQL'
     default: false
     required: false
     type: boolean
-  build_setup_javakotlin:
+  buildsetup_javakotlin:
     description: Indicates if the build for Java projects needs to have an action to setup the language before running CodeQL'
     default: false
     required: false
     type: boolean
-  build_setup_js:
+  buildsetup_js:
     description: Indicates if the build for javascript-typescript projects needs to have an action to setup the language before running CodeQL'
     default: false
     required: false
     type: boolean
-  build_setup_python:
+  buildsetup_python:
     description: Indicates if the build for Python projects needs to have an action to setup the language before running CodeQL'
     default: false
     required: false
     type: boolean
-  build_setup_ruby:
+  buildsetup_ruby:
     description: Indicates if the build for Ruby projects needs to have an action to setup the language before running CodeQL'
     default: false
     required: false
     type: boolean
-  build_setup_swift:
+  buildsetup_swift:
     description: Indicates if the build for Swift projects needs to have an action to setup the language before running CodeQL'
     default: false
     required: false

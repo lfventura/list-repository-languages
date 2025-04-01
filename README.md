@@ -60,14 +60,14 @@ Various inputs are defined in [`action.yml`](action.yml):
 | github&#x2011;token | Token to use to authorize. | ${{&nbsp;github.token&nbsp;}} |
 | owner | The repository owner | ${{ github.repository_owner }} |
 | repo | The repository name | ${{ github.event.repository.name }} |
-| buildvpn_cpp | Indicates if a VPN Connection needs to be established for C++ | none |
-| buildvpn_csharp | Indicates if a VPN Connection needs to be established for C# | none |
-| buildvpn_go | Indicates if a VPN Connection needs to be established for Go | none |
-| buildvpn_javakotlin | Indicates if a VPN Connection needs to be established for Java/Kotlin | none |
-| buildvpn_js | Indicates if a VPN Connection needs to be established for JavaScript/TypeScript | none |
-| buildvpn_python | Indicates if a VPN Connection needs to be established for Python | none |
-| buildvpn_ruby | Indicates if a VPN Connection needs to be established for Ruby | none |
-| buildvpn_swift | Indicates if a VPN Connection needs to be established for Swift | none |
+| buildvpn_cpp | Indicates if a VPN Connection needs to be established for C++ | false |
+| buildvpn_csharp | Indicates if a VPN Connection needs to be established for C# | false |
+| buildvpn_go | Indicates if a VPN Connection needs to be established for Go | false |
+| buildvpn_javakotlin | Indicates if a VPN Connection needs to be established for Java/Kotlin | false |
+| buildvpn_js | Indicates if a VPN Connection needs to be established for JavaScript/TypeScript | false |
+| buildvpn_python | Indicates if a VPN Connection needs to be established for Python | false |
+| buildvpn_ruby | Indicates if a VPN Connection needs to be established for Ruby | false |
+| buildvpn_swift | Indicates if a VPN Connection needs to be established for Swift | false |
 | buildmode_cpp | Custom build mode for C++ | none |
 | buildmode_csharp | Custom build mode for C# | none |
 | buildmode_go | Custom build mode for Go | none |
@@ -101,13 +101,21 @@ Various inputs are defined in [`action.yml`](action.yml):
 | envvars_ruby | Env vars in a JSON format with the variables that should be used for build | {} | 
 | envvars_swift | Env vars in a JSON format with the variables that should be used for build | {} |
 | skip_languages | The languages to skip when building the languages map, comma separated list. Useful if the test for a specific language is running on another tool | none |
+| buildsetup_cpp | Indicates if the build for CPP projects needs to have any specific setup for CPP. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | ""
+| buildsetup_csharp | Indicates if the build for C# projects needs to have any specific setup for C#, comma separated list. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | ""
+| buildsetup_go | Indicates if the build for GO projects needs to have any specific setup for GO, comma separated list. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | ""
+| buildsetup_javakotlin | Indicates if the build for Java/Kotlin projects needs to have any specific setup for Java, comma separated list. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | ""
+| buildsetup_js | Indicates if the build for Javascript/Typescript projects needs to have any specific setup for JavaScript, comma separated list. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | ""
+| buildsetup_python | Indicates if the build for Python projects needs to have any specific setup for Python, comma separated list. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | ""
+| buildsetup_ruby | Indicates if the build for Ruby projects needs to have any specific setup for Ruby, comma separated list. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | ""
+| buildsetup_swift | Indicates if the build for Swift projects needs to have any specific setup for Swift, comma separated list. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | ""
 
 ## ⬅️ Outputs
 | Name | Description |
 | --- | - |
 | languages_repo | The languages of the repository as an array |
 | languages_codeql | The languages of the repository as an array for CodeQL Matrix without Build Mode set |
-| languages_codeql_w_buildmode | The languages of the repository as a JSON array ([{language: string, build-mode: string, manual-build-command: [], vpn-connection: boolean, pre-commands: [], env-vars: {}}]) for CodeQL Matrix with Build Mode set |
+| languages_codeql_w_buildmode | The languages of the repository as a JSON array ([{language: string, build-mode: string, manual-build-command: [], vpn-connection: boolean, pre-commands: [], env-vars: {}, setup_language: boolean}]) for CodeQL Matrix with Build Mode set |
 | codeql_supported | Bool that indicates if there are supported languages by CodeQL |
 | skip_languages | The languages that were skipped when building the languages map
 

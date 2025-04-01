@@ -157,7 +157,47 @@ inputs:
   skip_languages:
     description: The languages to skip when building the languages map, comma separated list
     required: false
-
+  buildsetup_cpp:
+    description: Indicates if the build for C/C++ projects needs to have an action to setup the language before running CodeQL'
+    default: false
+    required: false
+    type: string
+  buildsetup_csharp:
+    description: Indicates if the build for C# projects needs to have an action to setup the language before running CodeQL'
+    default: false
+    required: false
+    type: string
+  buildsetup_go:
+    description: Indicates if the build for Go projects needs to have an action to setup the language before running CodeQL'
+    default: false
+    required: false
+    type: string
+  buildsetup_javakotlin:
+    description: Indicates if the build for Java projects needs to have an action to setup the language before running CodeQL'
+    default: false
+    required: false
+    type: string
+  buildsetup_js:
+    description: Indicates if the build for javascript-typescript projects needs to have an action to setup the language before running CodeQL'
+    default: false
+    required: false
+    type: string
+  buildsetup_python:
+    description: Indicates if the build for Python projects needs to have an action to setup the language before running CodeQL'
+    default: false
+    required: false
+    type: string
+  buildsetup_ruby:
+    description: Indicates if the build for Ruby projects needs to have an action to setup the language before running CodeQL'
+    default: false
+    required: false
+    type: string
+  buildsetup_swift:
+    description: Indicates if the build for Swift projects needs to have an action to setup the language before running CodeQL'
+    default: false
+    required: false
+    type: string
+  
 outputs:
   languages_repo:
     description: The languages of the repository as a JSON array

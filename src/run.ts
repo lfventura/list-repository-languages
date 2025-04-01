@@ -100,6 +100,18 @@ export async function run(): Promise<void> {
       "swift": core.getInput('buildmode_manual_swift') ? core.getInput('buildmode_manual_swift').split('\n').map(cmd => cmd.trim()) : [defaultBuildModeManualCommand],
     }
 
+    // Control variable to indicate to actions if a language needs a setup action before running the analysis
+    const buildSetup : { [key: string]: string[] } = {
+      "c-cpp": core.getInput('buildsetup_cpp') ? core.getInput('buildsetup_cpp').split(',').map(lang => lang.trim().toLowerCase()) : [],
+      "csharp": core.getInput('buildsetup_csharp') ? core.getInput('buildsetup_csharp').split(',').map(lang => lang.trim().toLowerCase()) : [],
+      "go": core.getInput('buildsetup_go') ? core.getInput('buildsetup_go').split(',').map(lang => lang.trim().toLowerCase()) : [],
+      "java-kotlin": core.getInput('buildsetup_javakotlin') ? core.getInput('buildsetup_javakotlin').split(',').map(lang => lang.trim().toLowerCase()) : [],
+      "javascript-typescript": core.getInput('buildsetup_js') ? core.getInput('buildsetup_js').split(',').map(lang => lang.trim().toLowerCase()) : [],
+      "python": core.getInput('buildsetup_python') ? core.getInput('buildsetup_python').split(',').map(lang => lang.trim().toLowerCase()) : [],
+      "ruby": core.getInput('buildsetup_ruby') ? core.getInput('buildsetup_ruby').split(',').map(lang => lang.trim().toLowerCase()) : [],
+      "swift": core.getInput('buildsetup_swift') ? core.getInput('buildsetup_swift').split(',').map(lang => lang.trim().toLowerCase()) : [],
+    }
+
     // If there is a custom manual build mode command, update the default manual build mode command mapping
     let customManualBuildmodeCommand : { [key: string]: string[] } = {}
     for (const language in customBuildmode) {
@@ -149,7 +161,8 @@ export async function run(): Promise<void> {
       "manual-build-command": customManualBuildmodeCommand[language] || "",
       "vpn-connection": vpnConnection[language] || false,
       "pre-commands": preCommands[language] || [],
-      "env-vars": buildEnvVars[language] || {}
+      "env-vars": buildEnvVars[language] || {},
+      "build-setup": buildSetup[language] || [],
     }));
 
     core.setOutput('languages_repo', JSON.stringify(languages.map(l => l.toLowerCase())));

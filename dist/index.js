@@ -30023,7 +30023,7 @@ async function run() {
         if (skipLanguages.length > 0) {
             for (const lang of skipLanguages) {
                 if (!Object.keys(codeqlBuildmodeMapping).includes(lang)) {
-                    throw new Error(`Invalid language ${lang} in skip_languages input. Valid languages are ${Object.keys(codeqlLanguageMapping).join(', ')}`);
+                    throw new Error(`Invalid language ${lang} in skip_languages input. Valid languages are ${Object.keys(codeqlBuildmodeMapping).join(', ')}`);
                 }
             }
         }
@@ -30046,6 +30046,17 @@ async function run() {
             "python": core.getInput('buildmode_manual_python') ? core.getInput('buildmode_manual_python').split('\n').map(cmd => cmd.trim()) : [defaultBuildModeManualCommand],
             "ruby": core.getInput('buildmode_manual_ruby') ? core.getInput('buildmode_manual_ruby').split('\n').map(cmd => cmd.trim()) : [defaultBuildModeManualCommand],
             "swift": core.getInput('buildmode_manual_swift') ? core.getInput('buildmode_manual_swift').split('\n').map(cmd => cmd.trim()) : [defaultBuildModeManualCommand],
+        };
+        // Control variable to indicate to actions if a language needs a setup action before running the analysis
+        const buildSetup = {
+            "c-cpp": core.getInput('buildsetup_cpp') ? core.getInput('buildsetup_cpp').split(',').map(lang => lang.trim().toLowerCase()) : [],
+            "csharp": core.getInput('buildsetup_csharp') ? core.getInput('buildsetup_csharp').split(',').map(lang => lang.trim().toLowerCase()) : [],
+            "go": core.getInput('buildsetup_go') ? core.getInput('buildsetup_go').split(',').map(lang => lang.trim().toLowerCase()) : [],
+            "java-kotlin": core.getInput('buildsetup_javakotlin') ? core.getInput('buildsetup_javakotlin').split(',').map(lang => lang.trim().toLowerCase()) : [],
+            "javascript-typescript": core.getInput('buildsetup_js') ? core.getInput('buildsetup_js').split(',').map(lang => lang.trim().toLowerCase()) : [],
+            "python": core.getInput('buildsetup_python') ? core.getInput('buildsetup_python').split(',').map(lang => lang.trim().toLowerCase()) : [],
+            "ruby": core.getInput('buildsetup_ruby') ? core.getInput('buildsetup_ruby').split(',').map(lang => lang.trim().toLowerCase()) : [],
+            "swift": core.getInput('buildsetup_swift') ? core.getInput('buildsetup_swift').split(',').map(lang => lang.trim().toLowerCase()) : [],
         };
         // If there is a custom manual build mode command, update the default manual build mode command mapping
         let customManualBuildmodeCommand = {};
@@ -30088,7 +30099,8 @@ async function run() {
             "manual-build-command": customManualBuildmodeCommand[language] || "",
             "vpn-connection": vpnConnection[language] || false,
             "pre-commands": preCommands[language] || [],
-            "env-vars": buildEnvVars[language] || {}
+            "env-vars": buildEnvVars[language] || {},
+            "build-setup": buildSetup[language] || [],
         }));
         core.setOutput('languages_repo', JSON.stringify(languages.map(l => l.toLowerCase())));
         core.setOutput('languages_codeql', JSON.stringify(languages_codeql_format));

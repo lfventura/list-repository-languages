@@ -30006,6 +30006,17 @@ async function run() {
             "ruby": core.getBooleanInput('buildvpn_ruby'),
             "swift": core.getBooleanInput('buildvpn_swift'),
         };
+        // Control variable to indicate to actions if a language needs a setup action before running the analysis
+        const buildSetup = {
+            "c-cpp": core.getBooleanInput('buildsetup_cpp'),
+            "csharp": core.getBooleanInput('buildsetup_csharp'),
+            "go": core.getBooleanInput('buildsetup_go'),
+            "java-kotlin": core.getBooleanInput('buildsetup_javakotlin'),
+            "javascript-typescript": core.getBooleanInput('buildsetup_js'),
+            "python": core.getBooleanInput('buildsetup_python'),
+            "ruby": core.getBooleanInput('buildsetup_ruby'),
+            "swift": core.getBooleanInput('buildsetup_swift'),
+        };
         // If there is an input for the module passing a custom build mode, store on this transitive const
         const customBuildmode = {
             "c-cpp": core.getInput('buildmode_cpp').toLowerCase(),
@@ -30023,7 +30034,7 @@ async function run() {
         if (skipLanguages.length > 0) {
             for (const lang of skipLanguages) {
                 if (!Object.keys(codeqlBuildmodeMapping).includes(lang)) {
-                    throw new Error(`Invalid language ${lang} in skip_languages input. Valid languages are ${Object.keys(codeqlLanguageMapping).join(', ')}`);
+                    throw new Error(`Invalid language ${lang} in skip_languages input. Valid languages are ${Object.keys(codeqlBuildmodeMapping).join(', ')}`);
                 }
             }
         }
@@ -30088,7 +30099,8 @@ async function run() {
             "manual-build-command": customManualBuildmodeCommand[language] || "",
             "vpn-connection": vpnConnection[language] || false,
             "pre-commands": preCommands[language] || [],
-            "env-vars": buildEnvVars[language] || {}
+            "env-vars": buildEnvVars[language] || {},
+            "build-setup": buildSetup[language] || false,
         }));
         core.setOutput('languages_repo', JSON.stringify(languages.map(l => l.toLowerCase())));
         core.setOutput('languages_codeql', JSON.stringify(languages_codeql_format));

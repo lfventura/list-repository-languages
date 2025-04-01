@@ -54,6 +54,18 @@ export async function run(): Promise<void> {
       "swift": core.getBooleanInput('buildvpn_swift'),
     }
 
+    // Control variable to indicate to actions if a language needs a setup action before running the analysis
+    const buildSetup : { [key: string]: boolean } = {
+      "c-cpp": core.getBooleanInput('buildsetup_cpp'),
+      "csharp": core.getBooleanInput('buildsetup_csharp'),
+      "go": core.getBooleanInput('buildsetup_go'),
+      "java-kotlin": core.getBooleanInput('buildsetup_javakotlin'),
+      "javascript-typescript": core.getBooleanInput('buildsetup_js'),
+      "python": core.getBooleanInput('buildsetup_python'),
+      "ruby": core.getBooleanInput('buildsetup_ruby'),
+      "swift": core.getBooleanInput('buildsetup_swift'),
+    }
+
     // If there is an input for the module passing a custom build mode, store on this transitive const
     const customBuildmode : { [key: string]: string } = {
       "c-cpp": core.getInput('buildmode_cpp').toLowerCase(),
@@ -149,7 +161,8 @@ export async function run(): Promise<void> {
       "manual-build-command": customManualBuildmodeCommand[language] || "",
       "vpn-connection": vpnConnection[language] || false,
       "pre-commands": preCommands[language] || [],
-      "env-vars": buildEnvVars[language] || {}
+      "env-vars": buildEnvVars[language] || {},
+      "build-setup": buildSetup[language] || false,
     }));
 
     core.setOutput('languages_repo', JSON.stringify(languages.map(l => l.toLowerCase())));

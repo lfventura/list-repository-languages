@@ -101,13 +101,21 @@ Various inputs are defined in [`action.yml`](action.yml):
 | envvars_ruby | Env vars in a JSON format with the variables that should be used for build | {} | 
 | envvars_swift | Env vars in a JSON format with the variables that should be used for build | {} |
 | skip_languages | The languages to skip when building the languages map, comma separated list. Useful if the test for a specific language is running on another tool | none |
+| buildsetup_cpp | Indicates if the build for CPP projects needs to have any specific setup for CPP. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | false
+| buildsetup_csharp | Indicates if the build for C# projects needs to have any specific setup for C#. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | false
+| buildsetup_go | Indicates if the build for GO projects needs to have any specific setup for GO. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | false
+| buildsetup_javakotlin | Indicates if the build for Java/Kotlin projects needs to have any specific setup for Java. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | false
+| buildsetup_js | Indicates if the build for Javascript/Typescript projects needs to have any specific setup for JavaScript. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | false
+| buildsetup_python | Indicates if the build for Python projects needs to have any specific setup for Python. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | false
+| buildsetup_ruby | Indicates if the build for Ruby projects needs to have any specific setup for Ruby. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | false
+| buildsetup_swift | Indicates if the build for Swift projects needs to have any specific setup for Swift. This is useful if you need to trigger for example a setup-language action before running the CodeQL Analysis | false
 
 ## ⬅️ Outputs
 | Name | Description |
 | --- | - |
 | languages_repo | The languages of the repository as an array |
 | languages_codeql | The languages of the repository as an array for CodeQL Matrix without Build Mode set |
-| languages_codeql_w_buildmode | The languages of the repository as a JSON array ([{language: string, build-mode: string, manual-build-command: [], vpn-connection: boolean, pre-commands: [], env-vars: {}}]) for CodeQL Matrix with Build Mode set |
+| languages_codeql_w_buildmode | The languages of the repository as a JSON array ([{language: string, build-mode: string, manual-build-command: [], vpn-connection: boolean, pre-commands: [], env-vars: {}, setup_language: boolean}]) for CodeQL Matrix with Build Mode set |
 | codeql_supported | Bool that indicates if there are supported languages by CodeQL |
 | skip_languages | The languages that were skipped when building the languages map
 

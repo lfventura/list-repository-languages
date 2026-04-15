@@ -29983,6 +29983,10 @@ async function run() {
             "python": "python",
             "ruby": "ruby",
             "swift": "swift",
+            // `actions` is a pseudo-language: Linguist/GitHub does not report it in
+            // the /languages endpoint. It is detected separately below by looking
+            // for workflow YAML files in .github/workflows/.
+            "actions": "actions",
         };
         // Mapping between the CodeQL languages and the default build mode for CodeQL
         let codeqlBuildmodeMapping = {
@@ -29994,6 +29998,8 @@ async function run() {
             "python": "none",
             "ruby": "none",
             "swift": "none",
+            // `actions` scans workflow YAML files — no compilation needed.
+            "actions": "none",
         };
         // Control variable to indicate to actions if a VPN Connection needs to be established for the analysis
         const vpnConnection = {
@@ -30090,6 +30096,24 @@ async function run() {
         const langResponse = await octokit.request(`GET /repos/${owner}/${repo}/languages`);
         core.debug(JSON.stringify({ langResponse }));
         let languages = Object.keys(langResponse.data);
+        // Detect GitHub Actions workflows manually — the /languages endpoint
+        // (Linguist) does not classify workflow YAML as the CodeQL `actions`
+        // language. If the repo has any .yml / .yaml files under .github/workflows,
+        // we inject the pseudo-language `actions` into the matrix so CodeQL can
+        // scan the workflow files themselves (the same coverage GitHub's default
+        // setup provides via `languages: ["actions"]`).
+        try {
+            const workflowDir = await octokit.rest.repos.getContent({ owner, repo, path: '.github/workflows' });
+            if (Array.isArray(workflowDir.data)) {
+                const hasWorkflowYaml = workflowDir.data.some(f => f.type === 'file' && /\.ya?ml$/i.test(f.name));
+                if (hasWorkflowYaml) {
+                    languages.push('actions');
+                }
+            }
+        }
+        catch {
+            // No .github/workflows directory (or inaccessible) — skip actions scanning
+        }
         let languages_codeql_format = Array.from(new Set(languages
             .map(l => codeqlLanguageMapping[l.toLowerCase()])
             .filter(l => l && !skipLanguages.includes(l))));

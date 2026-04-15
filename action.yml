@@ -211,5 +211,5 @@ outputs:
     description: The languages that were skipped when building the languages map
 
 runs:
-  using: "node20"
+  using: "node24"
   main: "dist/index.js"

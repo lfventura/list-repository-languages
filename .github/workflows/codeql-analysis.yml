@@ -12,6 +12,11 @@ on:
 #   codeql:
 #     name: CodeQL
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 jobs:
   languages:
     runs-on: ubuntu-latest
@@ -27,10 +32,6 @@ jobs:
     needs: [languages]
     name: Analyze
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
 
     strategy:
       fail-fast: false

@@ -35369,6 +35369,11 @@ async function run() {
             "kotlin": "java-kotlin",
             "javascript": "javascript-typescript",
             "typescript": "javascript-typescript",
+            // HTML has no standalone CodeQL language — the javascript-typescript
+            // extractor processes .html/.htm/.xhtml/.vue/.hbs/.json/.yaml alongside
+            // .js/.ts. Mapping html here lets pure-HTML repos (static-asset apps
+            // with no .js) trigger CodeQL analysis of their markup.
+            "html": "javascript-typescript",
             "python": "python",
             "ruby": "ruby",
             "swift": "swift",

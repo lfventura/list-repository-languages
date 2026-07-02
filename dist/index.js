@@ -35427,6 +35427,20 @@ async function run() {
                 }
             }
         }
+        // Languages to force-include in the CodeQL matrix even when the GitHub /languages
+        // API does not detect them (e.g. the source is not on the default branch yet, or
+        // Linguist under-reports it). Forced languages receive the SAME build config
+        // (build-mode, manual command, pre-commands, VPN, env-vars, build-setup) as detected ones.
+        const forceLanguages = core.getInput('force_languages') ? core.getInput('force_languages').split(',').map(lang => lang.trim().toLowerCase()) : [];
+        // Validate: each forced language must resolve to a known CodeQL language.
+        // Accept either the raw Linguist name (html, kotlin) or the CodeQL id (javascript-typescript, swift).
+        const validCodeqlLangs = new Set(Object.values(codeqlLanguageMapping));
+        for (const lang of forceLanguages) {
+            const mapped = codeqlLanguageMapping[lang] || lang;
+            if (!validCodeqlLangs.has(mapped)) {
+                throw new Error(`Invalid language ${lang} in force_languages input. Valid languages are ${Array.from(validCodeqlLangs).join(', ')}`);
+            }
+        }
         // If there is a custom build mode, update the default build mode mapping
         for (const language in customBuildmode) {
             if (customBuildmode[language]) {
@@ -35511,6 +35525,13 @@ async function run() {
         let languages_codeql_format = Array.from(new Set(languages
             .map(l => codeqlLanguageMapping[l.toLowerCase()])
             .filter(l => l && !skipLanguages.includes(l))));
+        // Union in forced languages (mapped to CodeQL ids), respecting skip_languages.
+        // The .map() below then builds their entries from the SAME per-language config maps,
+        // so a forced language is byte-identical to a detected one.
+        const forcedCodeqlLangs = forceLanguages
+            .map(l => codeqlLanguageMapping[l] || l)
+            .filter(l => l && !skipLanguages.includes(l));
+        languages_codeql_format = Array.from(new Set([...languages_codeql_format, ...forcedCodeqlLangs]));
         let languages_codeql_output = languages_codeql_format.map(language => ({
             language: language,
             "build-mode": codeqlBuildmodeMapping[language],

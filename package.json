@@ -1,6 +1,6 @@
 {
   "name": "action-typescript",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "GitHub Actions TypeScript template",
   "main": "dist/index.js",
   "scripts": {
@@ -24,29 +24,30 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.11.1",
-    "@actions/github": "^6.0.0"
+    "@actions/core": "1.11.1",
+    "@actions/github": "6.0.1"
   },
   "devDependencies": {
-    "@github/local-action": "github:github/local-action",
-    "@types/node": "^24.12.2",
-    "@typescript-eslint/eslint-plugin": "^8.24.0",
-    "@typescript-eslint/parser": "^8.24.0",
-    "@vercel/ncc": "^0.38.3",
-    "eslint": "^9.20.1",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.7.3"
+    "@github/local-action": "github:github/local-action#ba80dbc372f776d05ae3a16505865a66c1cea83b",
+    "@types/node": "24.12.2",
+    "@typescript-eslint/eslint-plugin": "8.58.2",
+    "@typescript-eslint/parser": "8.58.2",
+    "@vercel/ncc": "0.38.4",
+    "eslint": "9.39.4",
+    "jest": "29.7.0",
+    "ts-jest": "29.4.9",
+    "ts-node-dev": "2.0.0",
+    "typescript": "5.9.3"
   },
   "overrides": {
-    "undici": "^6.24.0",
-    "brace-expansion": "^1.1.12",
-    "@actions/http-client": "^2.2.3",
-    "@octokit/plugin-paginate-rest": "^9.2.2",
-    "@octokit/request": "^8.4.1",
-    "@octokit/endpoint": "^9.0.6",
-    "@octokit/request-error": "^5.1.1",
-    "esbuild": "^0.25.0"
+    "undici": "6.27.0",
+    "@babel/core": "7.29.7",
+    "brace-expansion": "1.1.14",
+    "@actions/http-client": "2.2.3",
+    "@octokit/plugin-paginate-rest": "9.2.2",
+    "@octokit/request": "8.4.1",
+    "@octokit/endpoint": "9.0.6",
+    "@octokit/request-error": "5.1.1",
+    "esbuild": "0.25.12"
   }
 }

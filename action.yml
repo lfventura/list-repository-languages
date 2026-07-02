@@ -157,6 +157,14 @@ inputs:
   skip_languages:
     description: The languages to skip when building the languages map, comma separated list
     required: false
+  force_languages:
+    description: >-
+      Comma-separated CodeQL languages to force-include even when the GitHub
+      /languages API does not detect them (e.g. source not on the default branch
+      yet). Forced languages get the same build config (build mode, manual
+      command, pre-commands, VPN, env-vars) as detected ones. Accepts raw names
+      (html, kotlin) or CodeQL ids (swift, javascript-typescript).
+    required: false
   buildsetup_cpp:
     description: Indicates if the build for C/C++ projects needs to have an action to setup the language before running CodeQL'
     default: false

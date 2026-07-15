@@ -12,15 +12,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # dist/ on branches is stale by design (the Release workflow is the only
+      # dist producer), so build the action from this PR's source before self-use.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build action from source
+        run: npm run build
+
       - uses: ./
-        id: list-languages
+        id: gh_api
+        with:
+          detection_method: gh-api
         # with:
         #   github_token: ${{ secrets.GITHUB_TOKEN }}
         #   owner: lfventura
         #   repo: list-repository-languages
 
-      - run: |
-          echo "Languages Repo: ${{ steps.list-languages.outputs.languages_repo }}"
-          echo "Languages CodeQL: ${{ steps.list-languages.outputs.languages_codeql }}"
-          echo "Languages CodeQL With BuildMode: ${{ steps.list-languages.outputs.languages_codeql_w_buildmode }}"
-          echo "CodeQL Supported: ${{ steps.list-languages.outputs.codeql_supported }}"
+      - uses: ./
+        id: linguist
+        with:
+          detection_method: linguist
+
+      # Note: outputs may legitimately differ between methods on .github-only
+      # languages (linguist counts code under .github/, the gh-api does not).
+      - name: Print languages from both detection methods
+        run: |
+          echo "=== detection_method: gh-api ==="
+          echo "Languages Repo: ${{ steps.gh_api.outputs.languages_repo }}"
+          echo "Languages CodeQL: ${{ steps.gh_api.outputs.languages_codeql }}"
+          echo "Languages CodeQL With BuildMode: ${{ steps.gh_api.outputs.languages_codeql_w_buildmode }}"
+          echo "CodeQL Supported: ${{ steps.gh_api.outputs.codeql_supported }}"
+          echo "=== detection_method: linguist ==="
+          echo "Languages Repo: ${{ steps.linguist.outputs.languages_repo }}"
+          echo "Languages CodeQL: ${{ steps.linguist.outputs.languages_codeql }}"
+          echo "Languages CodeQL With BuildMode: ${{ steps.linguist.outputs.languages_codeql_w_buildmode }}"
+          echo "CodeQL Supported: ${{ steps.linguist.outputs.codeql_supported }}"

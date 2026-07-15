@@ -27,7 +27,10 @@ describe('codeqlLanguageMapping', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // All getInput / getBooleanInput calls return empty/false by default.
+    // detection_method is pinned to gh-api: these tests cover the API path
+    // (the v3 behaviour, kept byte-identical in v4).
     mockedCore.getInput.mockImplementation((name: string) => {
+      if (name === 'detection_method') return 'gh-api';
       if (name === 'github_token') return 'fake-token';
       if (name === 'owner') return 'acme';
       if (name === 'repo') return 'static-site';
@@ -73,6 +76,7 @@ describe('codeqlLanguageMapping', () => {
     // Force swift, and configure a manual build mode + command for it so we can
     // assert the forced entry carries the SAME build config as a detected one.
     mockedCore.getInput.mockImplementation((name: string) => {
+      if (name === 'detection_method') return 'gh-api';
       if (name === 'github_token') return 'fake-token';
       if (name === 'owner') return 'acme';
       if (name === 'repo') return 'ios-app';
@@ -109,6 +113,7 @@ describe('codeqlLanguageMapping', () => {
   test('an invalid force_languages value throws (via setFailed)', async () => {
     mockedGithub.getOctokit.mockReturnValue(mockOctokit({}));
     mockedCore.getInput.mockImplementation((name: string) => {
+      if (name === 'detection_method') return 'gh-api';
       if (name === 'github_token') return 'fake-token';
       if (name === 'owner') return 'acme';
       if (name === 'repo') return 'ios-app';

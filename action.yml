@@ -6,6 +6,36 @@ branding:
   color: "blue"
 
 inputs:
+  detection_method:
+    description: >-
+      How repository languages are detected. `linguist` (default since v4)
+      analyses the LOCAL checkout with linguist-js — requires actions/checkout
+      to have run before this action, makes zero GitHub API calls, and counts
+      code under .github/. `gh-api` calls the GitHub /languages API (the exact
+      v3 behaviour). Both methods produce format-identical outputs.
+    default: linguist
+    required: false
+  linguist_exclude_folders:
+    description: >-
+      Comma or newline-separated gitignore-style patterns of paths to exclude
+      from language detection (e.g. `docs/,examples/**`). Matched against
+      repo-root-relative paths of the LOCAL checkout, so actions/checkout must
+      have run before this action. Only affects `detection_method: linguist`
+      (the per-file results are filtered before byte summing) and the
+      `prune_undetected_languages` file scan — it CANNOT filter the aggregated
+      statistics returned by the GitHub /languages API: when set with
+      `detection_method: gh-api` a warning is emitted and only the prune scan
+      is filtered.
+    default: ''
+    required: false
+  prune_undetected_languages:
+    description: >-
+      When true, drop any computed CodeQL language that has no matching source
+      file (by extension) in the local checkout, emitting a warning per removal.
+      Requires actions/checkout to have run before this action.
+    default: false
+    required: false
+    type: boolean
   github_token:
     description: The GitHub token used to create an authenticated client
     default: ${{ github.token }}

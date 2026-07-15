@@ -1,6 +1,31 @@
 # Action
 
-A GitHub [Action](https://docs.github.com/en/actions) that outputs the repositories languages using [List repository languages](https://docs.github.com/en/rest/repos/repos#list-repository-languages).
+A GitHub [Action](https://docs.github.com/en/actions) that outputs the repository languages and maps them to the CodeQL matrix. Languages are detected either locally from the checkout with [linguist-js](https://www.npmjs.com/package/linguist-js) (default) or via the GitHub [List repository languages](https://docs.github.com/en/rest/repos/repos#list-repository-languages) API.
+
+## ⚠️ Breaking change in v4
+
+- New input `detection_method` defaults to `linguist`: languages are detected from the **local checkout** using linguist-js (same rules/names as GitHub's Linguist, zero GitHub API calls). To keep the exact v3 behavior, set `detection_method: gh-api`.
+- `detection_method: linguist` **requires `actions/checkout` to run before this action** (it analyses the working tree).
+- Unlike GitHub's Linguist (which treats `.github/` as vendored), linguist mode **counts code under `.github/`** (helper scripts, composite actions), so CodeQL can cover it.
+- In linguist mode the `actions` pseudo-language is detected from the filesystem (`.github/workflows/*.yml|yaml`) instead of the Contents API.
+
+### Why the two detection methods can report different language sets
+
+The two `detection_method` values look at different things, so they can legitimately disagree:
+
+- `gh-api` reflects the repository's **default branch**: it returns the Linguist statistics GitHub last computed for that branch. `linguist` analyses the **checked-out ref**. On a pull request that adds or removes a language's files, the two methods diverge until the PR is merged (and GitHub recomputes its stats) — that is expected, not a bug.
+- `linguist` mode counts code under `.github/` **by design** (helper scripts, composite actions), while the GitHub API always excludes `.github/` as vendored. A repository whose only shell script lives in `.github/` reports `Shell` in linguist mode but not via `gh-api`.
+- `linguist_exclude_folders` can only filter `linguist` detection (and the `prune_undetected_languages` file scan) — it **cannot** affect the aggregated statistics the GitHub `/languages` API returns, so with `gh-api` the language set stays unfiltered (a warning is emitted).
+
+## Repository layout: `dist/` on `main`, written only by the Release workflow
+
+`main` **carries** the compiled `dist/` bundle, but it is generated **exclusively by the [Release workflow](.github/workflows/release.yml)**: each release builds `dist/`, commits it together with the version bump, and pushes that commit to `main` plus the release tag. Pull requests must **not** add or modify `dist/` — the `dist_guard` CI job in [Build & Test](.github/workflows/build_test.yaml) fails any PR that does.
+
+Consequences:
+
+- `dist/` on `main` always corresponds to the **latest release**. Between a source merge and the next release, `dist/` intentionally still reflects the previous release — `@main` behaves like the latest release, not like unreleased source.
+- Recommended consumption remains a **pinned release tag or its commit SHA**, e.g. `lfventura/list-repository-languages@v4.0.0`. Pinning `@main` works (it resolves to the latest released `dist/`), but tags give reproducible, auditable upgrades.
+- This repository's own CI workflows that self-use the action build it from source first (`npm ci && npm run build`), so they exercise the PR's source rather than the released bundle.
 
 ## Usage
 Create a workflow (eg: `.github/workflows/seat-count.yml`). See [Creating a Workflow file](https://help.github.com/en/articles/configuring-a-workflow#creating-a-workflow-file).
@@ -16,7 +41,8 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: lfventura/list-repository-languages@main
+      - uses: actions/checkout@v4 # required by detection_method: linguist (the default)
+      - uses: lfventura/list-repository-languages@v4.0.0
         id: list-languages
       - run: echo ${{ join(fromJSON(steps.list-languages.outputs.languages_repo), ', ') }}
 ```
@@ -31,7 +57,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: lfventura/list-repository-languages@main
+      - uses: lfventura/list-repository-languages@v4.0.0
         id: list-languages
     outputs:
       languages_codeql: ${{ steps.list-languages.outputs.languages_codeql }}
@@ -48,7 +74,7 @@ jobs:
 ### CodeQL
 You can use the output `languages_codeql` to map languages to codeql supported languages. [example](https://github.com/lfventura/.github/blob/main/.github/workflows/codeql.yml).
 ```yml
-      - uses: lfventura/list-repository-languages@main
+      - uses: lfventura/list-repository-languages@v4.0.0
         id: list-languages
 ```
 
@@ -57,7 +83,10 @@ Various inputs are defined in [`action.yml`](action.yml):
 
 | Name | Description | Default |
 | --- | - | - |
-| github&#x2011;token | Token to use to authorize. | ${{&nbsp;github.token&nbsp;}} |
+| detection_method | How languages are detected. `linguist` analyses the **local checkout** with linguist-js — requires `actions/checkout` to run **before** this action, makes zero GitHub API calls, counts code under `.github/`, and detects the `actions` pseudo-language from `.github/workflows/*.yml\|yaml` on disk. `gh-api` uses the GitHub `/languages` API (exact v3 behavior). Outputs are format-identical between both methods. | linguist |
+| linguist_exclude_folders | Comma or newline-separated gitignore-style patterns (e.g. `docs/,examples/**`) excluded from language detection, matched against repo-root-relative paths of the local checkout (requires `actions/checkout` to run **before** this action). Linguist mode only: it filters the per-file linguist results and the `prune_undetected_languages` file scan, but **cannot** filter the aggregated GitHub `/languages` API statistics — with `detection_method: gh-api` a warning is emitted and only the prune scan is filtered. | "" |
+| prune_undetected_languages | When `true`, any computed CodeQL language with no matching source file (by extension) in the local checkout is dropped from the CodeQL outputs, with a warning per removal (`codeql_supported` is recomputed). Works with both detection methods, and also filters `force_languages` entries. The file scan skips `linguist_exclude_folders` patterns and any path the **root** `.gitattributes` marks `linguist-vendored`/`linguist-generated` (set or `=true` form; the negated `-linguist-vendored` form is never excluded — nested `.gitattributes` files are not read). Requires `actions/checkout` to run **before** this action. | false |
+| github&#x2011;token | Token to use to authorize (used by `detection_method: gh-api`). | ${{&nbsp;github.token&nbsp;}} |
 | owner | The repository owner | ${{ github.repository_owner }} |
 | repo | The repository name | ${{ github.event.repository.name }} |
 | buildvpn_cpp | Indicates if a VPN Connection needs to be established for C++ | false |

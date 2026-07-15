@@ -1,5 +1,12 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github';
+import { detectLocalLanguages } from './linguist';
+import {
+  hasWorkflowYaml,
+  collectExtensions,
+  parseExcludePatterns,
+  gitattributesLinguistExcludes,
+} from './fsscan';
 
 /**
  * The main function for the action.
@@ -11,6 +18,28 @@ export async function run(): Promise<void> {
     const token: string = core.getInput('github_token')
     const owner: string = core.getInput('owner')
     const repo: string = core.getInput('repo')
+
+    // How languages are detected:
+    // - linguist (default since v4): analyse the LOCAL checkout with linguist-js.
+    //   Requires actions/checkout to have run first; makes zero GitHub API calls.
+    // - gh-api: call the GitHub /languages API (the v3 behaviour).
+    const detectionMethod: string = (core.getInput('detection_method') || 'linguist').toLowerCase()
+    if (detectionMethod !== 'linguist' && detectionMethod !== 'gh-api') {
+      throw new Error(`Invalid detection_method ${detectionMethod}. Valid values are linguist, gh-api`)
+    }
+
+    // When true, any computed CodeQL language with no matching file (by
+    // extension) in the local checkout is dropped from the matrix.
+    // Requires actions/checkout to have run first.
+    const pruneUndetectedLanguages: boolean = core.getBooleanInput('prune_undetected_languages')
+
+    // Root of the local checkout used by linguist detection and pruning.
+    const workspaceDir: string = process.env.GITHUB_WORKSPACE || process.cwd()
+
+    // Gitignore-style patterns (comma or newline separated) excluded from
+    // linguist detection AND from the prune extension scan. It cannot filter
+    // the aggregated /languages statistics in gh-api mode (warned below).
+    const linguistExcludeFolders: string[] = parseExcludePatterns(core.getInput('linguist_exclude_folders'))
 
     // Languages that are supported by CodeQL, mapping between the Github API output and the accepted CodeQL Input
     const codeqlLanguageMapping: { [key: string]: string } = {
@@ -169,29 +198,53 @@ export async function run(): Promise<void> {
       "swift": core.getInput('envvars_swift') ? JSON.parse(core.getInput('envvars_swift')) : {},
     };
 
-    const octokit: ReturnType<typeof github.getOctokit> = github.getOctokit(token);
-    const langResponse = await octokit.request(`GET /repos/${owner}/${repo}/languages`);
-    core.debug(JSON.stringify({langResponse}))
-    let languages: string[] = Object.keys(langResponse.data);
+    let languages: string[];
+    if (detectionMethod === 'linguist') {
+      // Local detection: linguist-js over the checkout. The result is the same
+      // {LanguageName: bytes} map the GitHub /languages API returns (same
+      // names — both derive from linguist's languages.yml), so everything
+      // downstream (CodeQL mapping, force/skip, html) is method-agnostic.
+      // Zero GitHub API calls are made on this path.
+      const languageBytes = await detectLocalLanguages(workspaceDir, linguistExcludeFolders)
+      core.debug(JSON.stringify({ languageBytes }))
+      languages = Object.keys(languageBytes);
 
-    // Detect GitHub Actions workflows manually — the /languages endpoint
-    // (Linguist) does not classify workflow YAML as the CodeQL `actions`
-    // language. If the repo has any .yml / .yaml files under .github/workflows,
-    // we inject the pseudo-language `actions` into the matrix so CodeQL can
-    // scan the workflow files themselves (the same coverage GitHub's default
-    // setup provides via `languages: ["actions"]`).
-    try {
-      const workflowDir = await octokit.rest.repos.getContent({ owner, repo, path: '.github/workflows' });
-      if (Array.isArray(workflowDir.data)) {
-        const hasWorkflowYaml = workflowDir.data.some(
-          f => f.type === 'file' && /\.ya?ml$/i.test(f.name)
-        );
-        if (hasWorkflowYaml) {
-          languages.push('actions');
-        }
+      // `actions` pseudo-language: detected from the filesystem — any
+      // .yml / .yaml file under .github/workflows in the checkout.
+      if (hasWorkflowYaml(workspaceDir)) {
+        languages.push('actions');
       }
-    } catch {
-      // No .github/workflows directory (or inaccessible) — skip actions scanning
+    } else {
+      // The /languages endpoint returns repo-wide aggregated statistics — a
+      // path filter cannot be applied to them. The input still filters the
+      // prune scan below, so it is not a no-op in gh-api mode.
+      if (linguistExcludeFolders.length > 0) {
+        core.warning('linguist_exclude_folders cannot filter the aggregated GitHub API statistics — it only affects linguist detection and pruning')
+      }
+      const octokit: ReturnType<typeof github.getOctokit> = github.getOctokit(token);
+      const langResponse = await octokit.request(`GET /repos/${owner}/${repo}/languages`);
+      core.debug(JSON.stringify({langResponse}))
+      languages = Object.keys(langResponse.data);
+
+      // Detect GitHub Actions workflows manually — the /languages endpoint
+      // (Linguist) does not classify workflow YAML as the CodeQL `actions`
+      // language. If the repo has any .yml / .yaml files under .github/workflows,
+      // we inject the pseudo-language `actions` into the matrix so CodeQL can
+      // scan the workflow files themselves (the same coverage GitHub's default
+      // setup provides via `languages: ["actions"]`).
+      try {
+        const workflowDir = await octokit.rest.repos.getContent({ owner, repo, path: '.github/workflows' });
+        if (Array.isArray(workflowDir.data)) {
+          const hasWorkflowYamlFiles = workflowDir.data.some(
+            f => f.type === 'file' && /\.ya?ml$/i.test(f.name)
+          );
+          if (hasWorkflowYamlFiles) {
+            languages.push('actions');
+          }
+        }
+      } catch {
+        // No .github/workflows directory (or inaccessible) — skip actions scanning
+      }
     }
 
     let languages_codeql_format = Array.from(
@@ -209,6 +262,45 @@ export async function run(): Promise<void> {
       .map(l => codeqlLanguageMapping[l] || l)
       .filter(l => l && !skipLanguages.includes(l));
     languages_codeql_format = Array.from(new Set([...languages_codeql_format, ...forcedCodeqlLangs]));
+
+    // Optionally drop CodeQL languages that have zero matching files (by
+    // extension) in the local checkout — protects against stale /languages
+    // data (deleted code) and over-eager force_languages. `actions` is checked
+    // via .github/workflows/*.yml|yaml; unknown ids are kept.
+    if (pruneUndetectedLanguages) {
+      const codeqlFileExtensions: { [key: string]: string[] } = {
+        "python": ['.py'],
+        "javascript-typescript": ['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx', '.html', '.htm', '.xhtml', '.vue', '.hbs'],
+        "go": ['.go'],
+        "java-kotlin": ['.java', '.kt', '.kts'],
+        "csharp": ['.cs'],
+        "c-cpp": ['.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx'],
+        "ruby": ['.rb'],
+        "swift": ['.swift'],
+      }
+      // The prune scan skips (a) linguist_exclude_folders patterns and (b)
+      // paths the ROOT .gitattributes marks linguist-vendored/linguist-generated
+      // — vendored-only code must not keep a language in the CodeQL matrix.
+      const presentExtensions = collectExtensions(workspaceDir, [
+        ...linguistExcludeFolders,
+        ...gitattributesLinguistExcludes(workspaceDir),
+      ]);
+      languages_codeql_format = languages_codeql_format.filter(language => {
+        let present: boolean;
+        if (language === 'actions') {
+          present = hasWorkflowYaml(workspaceDir);
+        } else if (codeqlFileExtensions[language]) {
+          present = codeqlFileExtensions[language].some(ext => presentExtensions.has(ext));
+        } else {
+          // Unknown CodeQL id — no extension mapping, keep it.
+          return true;
+        }
+        if (!present) {
+          core.warning(`${language} listed but no matching files found in the checkout — removed from CodeQL analysis`);
+        }
+        return present;
+      });
+    }
 
     let languages_codeql_output = languages_codeql_format.map(language => ({
       language: language,

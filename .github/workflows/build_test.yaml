@@ -16,16 +16,44 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
 
       - name: Build
         run: npm run build
+
+  dist_guard:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # dist/ is generated exclusively by the Release workflow. Removing dist
+      # is allowed (pure deletions pass); adding/modifying it is reserved to
+      # the release workflow (--diff-filter=d excludes deleted files).
+      - name: Fail if the PR adds or modifies dist/
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "${BASE_REF}"
+          if git diff --name-only --diff-filter=d "origin/${BASE_REF}...HEAD" -- dist/ | grep -q .; then
+            echo "::error::dist/ is generated exclusively by the Release workflow — remove dist changes from this PR"
+            exit 1
+          fi
+          echo "dist/ untouched (deletions allowed)"
 

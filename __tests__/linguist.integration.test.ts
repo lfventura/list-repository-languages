@@ -3,24 +3,38 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { beforeAll, describe, expect, jest, test } from '@jest/globals';
-import { hasWorkflowYaml, collectExtensions } from '../src/fsscan';
+import {
+  hasWorkflowYaml,
+  collectExtensions,
+  parseExcludePatterns,
+  gitattributesLinguistExcludes,
+} from '../src/fsscan';
 
 jest.setTimeout(120000);
 
 const repoRoot = path.join(__dirname, '..');
 const langRepoFixture = path.join(__dirname, 'fixtures', 'lang-repo');
 const pythonOnlyFixture = path.join(__dirname, 'fixtures', 'python-only');
+const nestedPyFixture = path.join(__dirname, 'fixtures', 'nested-py');
+const vendoredAttrsFixture = path.join(__dirname, 'fixtures', 'vendored-attrs');
+const vendoredNegatedFixture = path.join(__dirname, 'fixtures', 'vendored-negated');
 
 /**
  * Runs the REAL detectLocalLanguages (src/linguist.ts) in a child node
  * process: linguist-js is ESM-only and cannot be require()d inside jest's
  * CommonJS runtime, but plain node handles it fine.
  */
-function detect(dir: string): { [language: string]: number } {
+function detect(dir: string, excludePatterns: string[] = []): { [language: string]: number } {
   const helper = path.join(__dirname, 'helpers', 'detect-languages.ts');
   const stdout = execFileSync(
     process.execPath,
-    ['--require', 'ts-node/register/transpile-only', helper, dir],
+    [
+      '--require',
+      'ts-node/register/transpile-only',
+      helper,
+      dir,
+      JSON.stringify(excludePatterns),
+    ],
     { cwd: repoRoot, encoding: 'utf8' }
   );
   return JSON.parse(stdout);
@@ -73,6 +87,27 @@ describe('linguist local detection (real linguist-js)', () => {
       expect(bytes).toBeGreaterThan(0);
     }
   });
+
+  test('linguist_exclude_folders drops the languages of an excluded folder', () => {
+    // Go only exists at lib/util.go — present without the filter...
+    expect(result).toHaveProperty(['Go']);
+    // ...gone when lib/ is excluded, while sibling languages survive.
+    const filtered = detect(langRepoFixture, ['lib']);
+    expect(filtered).not.toHaveProperty(['Go']);
+    expect(filtered).toHaveProperty(['TypeScript']);
+    expect(filtered).toHaveProperty(['Python']);
+  });
+
+  test('exclusion of .github matches the second pass repo-root-relative', () => {
+    // Python only exists at .github/scripts/tool.py, found by the pass ROOTED
+    // AT .github/. Excluding `.github` must drop it — proving second-pass
+    // paths are relativized against the REPO ROOT before matching, not
+    // against the .github pass root.
+    const filtered = detect(langRepoFixture, ['.github']);
+    expect(filtered).not.toHaveProperty(['Python']);
+    expect(filtered).toHaveProperty(['TypeScript']);
+    expect(filtered).toHaveProperty(['Go']);
+  });
 });
 
 describe('filesystem scans (fsscan)', () => {
@@ -88,5 +123,29 @@ describe('filesystem scans (fsscan)', () => {
     const extensions = collectExtensions(pythonOnlyFixture);
     expect(extensions.has('.py')).toBe(true);
     expect(extensions.has('.go')).toBe(false);
+  });
+
+  test('collectExtensions skips paths matched by exclude patterns', () => {
+    expect(collectExtensions(nestedPyFixture).has('.py')).toBe(true);
+    expect(collectExtensions(nestedPyFixture, ['sub']).has('.py')).toBe(false);
+    // content-only pattern (does not match the directory itself) also works
+    expect(collectExtensions(nestedPyFixture, ['sub/**']).has('.py')).toBe(false);
+  });
+
+  test('parseExcludePatterns splits on commas and newlines and trims', () => {
+    expect(parseExcludePatterns(' docs/ ,examples/**\nvendor\n\n, ')).toEqual([
+      'docs/',
+      'examples/**',
+      'vendor',
+    ]);
+    expect(parseExcludePatterns('')).toEqual([]);
+  });
+
+  test('gitattributesLinguistExcludes collects vendored/generated patterns from the root .gitattributes', () => {
+    expect(gitattributesLinguistExcludes(vendoredAttrsFixture)).toEqual(['thirdparty/**']);
+    // negated form (-linguist-vendored) must NOT produce an exclusion
+    expect(gitattributesLinguistExcludes(vendoredNegatedFixture)).toEqual([]);
+    // no root .gitattributes at all
+    expect(gitattributesLinguistExcludes(pythonOnlyFixture)).toEqual([]);
   });
 });

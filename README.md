@@ -15,6 +15,7 @@ The two `detection_method` values look at different things, so they can legitima
 
 - `gh-api` reflects the repository's **default branch**: it returns the Linguist statistics GitHub last computed for that branch. `linguist` analyses the **checked-out ref**. On a pull request that adds or removes a language's files, the two methods diverge until the PR is merged (and GitHub recomputes its stats) — that is expected, not a bug.
 - `linguist` mode counts code under `.github/` **by design** (helper scripts, composite actions), while the GitHub API always excludes `.github/` as vendored. A repository whose only shell script lives in `.github/` reports `Shell` in linguist mode but not via `gh-api`.
+- `linguist_exclude_folders` can only filter `linguist` detection (and the `prune_undetected_languages` file scan) — it **cannot** affect the aggregated statistics the GitHub `/languages` API returns, so with `gh-api` the language set stays unfiltered (a warning is emitted).
 
 ## Repository layout: source-only `main`
 
@@ -82,7 +83,8 @@ Various inputs are defined in [`action.yml`](action.yml):
 | Name | Description | Default |
 | --- | - | - |
 | detection_method | How languages are detected. `linguist` analyses the **local checkout** with linguist-js — requires `actions/checkout` to run **before** this action, makes zero GitHub API calls, counts code under `.github/`, and detects the `actions` pseudo-language from `.github/workflows/*.yml\|yaml` on disk. `gh-api` uses the GitHub `/languages` API (exact v3 behavior). Outputs are format-identical between both methods. | linguist |
-| prune_undetected_languages | When `true`, any computed CodeQL language with no matching source file (by extension) in the local checkout is dropped from the CodeQL outputs, with a warning per removal (`codeql_supported` is recomputed). Works with both detection methods, and also filters `force_languages` entries. Requires `actions/checkout` to run **before** this action. | false |
+| linguist_exclude_folders | Comma or newline-separated gitignore-style patterns (e.g. `docs/,examples/**`) excluded from language detection, matched against repo-root-relative paths of the local checkout (requires `actions/checkout` to run **before** this action). Linguist mode only: it filters the per-file linguist results and the `prune_undetected_languages` file scan, but **cannot** filter the aggregated GitHub `/languages` API statistics — with `detection_method: gh-api` a warning is emitted and only the prune scan is filtered. | "" |
+| prune_undetected_languages | When `true`, any computed CodeQL language with no matching source file (by extension) in the local checkout is dropped from the CodeQL outputs, with a warning per removal (`codeql_supported` is recomputed). Works with both detection methods, and also filters `force_languages` entries. The file scan skips `linguist_exclude_folders` patterns and any path the **root** `.gitattributes` marks `linguist-vendored`/`linguist-generated` (set or `=true` form; the negated `-linguist-vendored` form is never excluded — nested `.gitattributes` files are not read). Requires `actions/checkout` to run **before** this action. | false |
 | github&#x2011;token | Token to use to authorize (used by `detection_method: gh-api`). | ${{&nbsp;github.token&nbsp;}} |
 | owner | The repository owner | ${{ github.repository_owner }} |
 | repo | The repository name | ${{ github.event.repository.name }} |

@@ -1,7 +1,12 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github';
 import { detectLocalLanguages } from './linguist';
-import { hasWorkflowYaml, collectExtensions } from './fsscan';
+import {
+  hasWorkflowYaml,
+  collectExtensions,
+  parseExcludePatterns,
+  gitattributesLinguistExcludes,
+} from './fsscan';
 
 /**
  * The main function for the action.
@@ -30,6 +35,11 @@ export async function run(): Promise<void> {
 
     // Root of the local checkout used by linguist detection and pruning.
     const workspaceDir: string = process.env.GITHUB_WORKSPACE || process.cwd()
+
+    // Gitignore-style patterns (comma or newline separated) excluded from
+    // linguist detection AND from the prune extension scan. It cannot filter
+    // the aggregated /languages statistics in gh-api mode (warned below).
+    const linguistExcludeFolders: string[] = parseExcludePatterns(core.getInput('linguist_exclude_folders'))
 
     // Languages that are supported by CodeQL, mapping between the Github API output and the accepted CodeQL Input
     const codeqlLanguageMapping: { [key: string]: string } = {
@@ -195,7 +205,7 @@ export async function run(): Promise<void> {
       // names — both derive from linguist's languages.yml), so everything
       // downstream (CodeQL mapping, force/skip, html) is method-agnostic.
       // Zero GitHub API calls are made on this path.
-      const languageBytes = await detectLocalLanguages(workspaceDir)
+      const languageBytes = await detectLocalLanguages(workspaceDir, linguistExcludeFolders)
       core.debug(JSON.stringify({ languageBytes }))
       languages = Object.keys(languageBytes);
 
@@ -205,6 +215,12 @@ export async function run(): Promise<void> {
         languages.push('actions');
       }
     } else {
+      // The /languages endpoint returns repo-wide aggregated statistics — a
+      // path filter cannot be applied to them. The input still filters the
+      // prune scan below, so it is not a no-op in gh-api mode.
+      if (linguistExcludeFolders.length > 0) {
+        core.warning('linguist_exclude_folders cannot filter the aggregated GitHub API statistics — it only affects linguist detection and pruning')
+      }
       const octokit: ReturnType<typeof github.getOctokit> = github.getOctokit(token);
       const langResponse = await octokit.request(`GET /repos/${owner}/${repo}/languages`);
       core.debug(JSON.stringify({langResponse}))
@@ -262,7 +278,13 @@ export async function run(): Promise<void> {
         "ruby": ['.rb'],
         "swift": ['.swift'],
       }
-      const presentExtensions = collectExtensions(workspaceDir);
+      // The prune scan skips (a) linguist_exclude_folders patterns and (b)
+      // paths the ROOT .gitattributes marks linguist-vendored/linguist-generated
+      // — vendored-only code must not keep a language in the CodeQL matrix.
+      const presentExtensions = collectExtensions(workspaceDir, [
+        ...linguistExcludeFolders,
+        ...gitattributesLinguistExcludes(workspaceDir),
+      ]);
       languages_codeql_format = languages_codeql_format.filter(language => {
         let present: boolean;
         if (language === 'actions') {

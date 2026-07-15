@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import ignore from 'ignore';
 
 export type LanguageBytes = { [language: string]: number };
 
@@ -36,8 +37,20 @@ const baseOptions = {
  * nothing can ever be double-counted), then byte counts are summed per
  * language from the file sizes — the same blob-byte semantics the GitHub
  * /languages API uses.
+ *
+ * `excludePatterns` (gitignore-style, from the `linguist_exclude_folders`
+ * input) is applied as a post-filter on the MERGED per-file results, before
+ * byte summing. linguist-js returns absolute file paths from both passes
+ * (including the pass rooted at `.github/`), so every path is relativized
+ * against the REPO ROOT (`path.relative(rootDir, file)` → e.g.
+ * `.github/scripts/tool.py`, never `scripts/tool.py`) before matching with
+ * the `ignore` package — patterns therefore always match repo-root-relative
+ * paths regardless of which pass found the file.
  */
-export async function detectLocalLanguages(rootDir: string): Promise<LanguageBytes> {
+export async function detectLocalLanguages(
+  rootDir: string,
+  excludePatterns: string[] = []
+): Promise<LanguageBytes> {
   const linguist = (await import('linguist-js')).default;
 
   // absolute file path -> language name
@@ -63,8 +76,15 @@ export async function detectLocalLanguages(rootDir: string): Promise<LanguageByt
     addPass(await linguist.analyseFolders([githubDir], baseOptions));
   }
 
+  const matcher = excludePatterns.length > 0 ? ignore().add(excludePatterns) : null;
   const merged: LanguageBytes = {};
   for (const [file, language] of Object.entries(fileLanguages)) {
+    if (matcher) {
+      // Relativize to the repo root (posix separators): correct for BOTH
+      // passes because linguist-js reports absolute paths.
+      const rel = path.relative(rootDir, file).split(path.sep).join('/');
+      if (rel && !rel.startsWith('..') && matcher.ignores(rel)) continue;
+    }
     let bytes: number;
     try {
       bytes = fs.statSync(file).size;

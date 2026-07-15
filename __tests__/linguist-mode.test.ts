@@ -67,7 +67,7 @@ describe('detection_method: linguist', () => {
     expect(mockedCore.setFailed).not.toHaveBeenCalled();
     const linguistOutputs = collectOutputs();
     expect(mockedGithub.getOctokit).not.toHaveBeenCalled();
-    expect(mockedDetect).toHaveBeenCalledWith(pythonOnlyFixture);
+    expect(mockedDetect).toHaveBeenCalledWith(pythonOnlyFixture, []);
 
     jest.clearAllMocks();
     mockedCore.getBooleanInput.mockReturnValue(false);
@@ -120,6 +120,30 @@ describe('detection_method: linguist', () => {
     expect(mockedCore.warning).toHaveBeenCalledWith(
       'go listed but no matching files found in the checkout — removed from CodeQL analysis'
     );
+  });
+
+  test('linguist_exclude_folders is parsed and forwarded to detection, without the gh-api warning', async () => {
+    // The real per-file filtering is covered by linguist.integration.test.ts
+    // (detectLocalLanguages is mocked here); this test pins the run.ts wiring:
+    // comma/newline parsing + pass-through to detectLocalLanguages.
+    process.env.GITHUB_WORKSPACE = pythonOnlyFixture;
+    mockInputs({
+      detection_method: 'linguist',
+      linguist_exclude_folders: ' docs/ ,examples/**\nvendor',
+    });
+    mockedDetect.mockResolvedValue({ Python: 10 });
+
+    const { run } = await import('../src/run');
+    await run();
+
+    expect(mockedCore.setFailed).not.toHaveBeenCalled();
+    expect(mockedDetect).toHaveBeenCalledWith(pythonOnlyFixture, [
+      'docs/',
+      'examples/**',
+      'vendor',
+    ]);
+    // The gh-api-only warning must not fire in linguist mode.
+    expect(mockedCore.warning).not.toHaveBeenCalled();
   });
 
   test('an invalid detection_method fails the action', async () => {

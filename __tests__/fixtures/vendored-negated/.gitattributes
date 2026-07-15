@@ -1,0 +1,2 @@
+# un-vendor: negated form must NOT exclude
+thirdparty/** -linguist-vendored

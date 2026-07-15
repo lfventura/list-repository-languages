@@ -1,6 +1,13 @@
 # Action
 
-A GitHub [Action](https://docs.github.com/en/actions) that outputs the repositories languages using [List repository languages](https://docs.github.com/en/rest/repos/repos#list-repository-languages).
+A GitHub [Action](https://docs.github.com/en/actions) that outputs the repository languages and maps them to the CodeQL matrix. Languages are detected either locally from the checkout with [linguist-js](https://www.npmjs.com/package/linguist-js) (default) or via the GitHub [List repository languages](https://docs.github.com/en/rest/repos/repos#list-repository-languages) API.
+
+## ⚠️ Breaking change in v4
+
+- New input `detection_method` defaults to `linguist`: languages are detected from the **local checkout** using linguist-js (same rules/names as GitHub's Linguist, zero GitHub API calls). To keep the exact v3 behavior, set `detection_method: gh-api`.
+- `detection_method: linguist` **requires `actions/checkout` to run before this action** (it analyses the working tree).
+- Unlike GitHub's Linguist (which treats `.github/` as vendored), linguist mode **counts code under `.github/`** (helper scripts, composite actions), so CodeQL can cover it.
+- In linguist mode the `actions` pseudo-language is detected from the filesystem (`.github/workflows/*.yml|yaml`) instead of the Contents API.
 
 ## Usage
 Create a workflow (eg: `.github/workflows/seat-count.yml`). See [Creating a Workflow file](https://help.github.com/en/articles/configuring-a-workflow#creating-a-workflow-file).
@@ -16,6 +23,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4 # required by detection_method: linguist (the default)
       - uses: lfventura/list-repository-languages@main
         id: list-languages
       - run: echo ${{ join(fromJSON(steps.list-languages.outputs.languages_repo), ', ') }}
@@ -57,7 +65,9 @@ Various inputs are defined in [`action.yml`](action.yml):
 
 | Name | Description | Default |
 | --- | - | - |
-| github&#x2011;token | Token to use to authorize. | ${{&nbsp;github.token&nbsp;}} |
+| detection_method | How languages are detected. `linguist` analyses the **local checkout** with linguist-js — requires `actions/checkout` to run **before** this action, makes zero GitHub API calls, counts code under `.github/`, and detects the `actions` pseudo-language from `.github/workflows/*.yml\|yaml` on disk. `gh-api` uses the GitHub `/languages` API (exact v3 behavior). Outputs are format-identical between both methods. | linguist |
+| prune_undetected_languages | When `true`, any computed CodeQL language with no matching source file (by extension) in the local checkout is dropped from the CodeQL outputs, with a warning per removal (`codeql_supported` is recomputed). Works with both detection methods, and also filters `force_languages` entries. Requires `actions/checkout` to run **before** this action. | false |
+| github&#x2011;token | Token to use to authorize (used by `detection_method: gh-api`). | ${{&nbsp;github.token&nbsp;}} |
 | owner | The repository owner | ${{ github.repository_owner }} |
 | repo | The repository name | ${{ github.event.repository.name }} |
 | buildvpn_cpp | Indicates if a VPN Connection needs to be established for C++ | false |

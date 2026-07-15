@@ -35440,212 +35440,6 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 8177:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.hasWorkflowYaml = hasWorkflowYaml;
-exports.collectExtensions = collectExtensions;
-const fs = __importStar(__nccwpck_require__(9896));
-const path = __importStar(__nccwpck_require__(6928));
-/**
- * Returns true when the checkout contains at least one workflow YAML file
- * under .github/workflows/ — the filesystem equivalent of the Contents-API
- * check used by the gh-api detection method for the `actions` pseudo-language.
- */
-function hasWorkflowYaml(rootDir) {
-    const workflowsDir = path.join(rootDir, '.github', 'workflows');
-    try {
-        return fs
-            .readdirSync(workflowsDir, { withFileTypes: true })
-            .some(entry => entry.isFile() && /\.ya?ml$/i.test(entry.name));
-    }
-    catch {
-        // No .github/workflows directory — no workflow files
-        return false;
-    }
-}
-/**
- * Walks the checkout and returns the set of lowercase file extensions present
- * (e.g. ".py", ".ts"). Only `.git` is skipped: pruning must only remove a
- * language when there is truly NO matching file anywhere in the working tree.
- */
-function collectExtensions(rootDir) {
-    const extensions = new Set();
-    const walk = (dir) => {
-        let entries;
-        try {
-            entries = fs.readdirSync(dir, { withFileTypes: true });
-        }
-        catch {
-            return;
-        }
-        for (const entry of entries) {
-            if (entry.isDirectory()) {
-                if (entry.name === '.git')
-                    continue;
-                walk(path.join(dir, entry.name));
-            }
-            else if (entry.isFile()) {
-                const ext = path.extname(entry.name).toLowerCase();
-                if (ext)
-                    extensions.add(ext);
-            }
-        }
-    };
-    walk(rootDir);
-    return extensions;
-}
-
-
-/***/ }),
-
-/***/ 3694:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.detectLocalLanguages = detectLocalLanguages;
-const fs = __importStar(__nccwpck_require__(9896));
-const path = __importStar(__nccwpck_require__(6928));
-/**
- * Options shared by every linguist-js pass:
- * - offline: use the languages.yml/vendor.yml/... data files shipped inside the
- *   linguist-js package — the action makes ZERO network/GitHub API calls.
- * - categories programming+markup: the GitHub /languages API only reports
- *   languages of type `programming` and `markup`, so filtering here keeps the
- *   linguist result byte-shape-identical ({LanguageName: bytes}) and
- *   name-identical (both derive from linguist's languages.yml) to the API.
- * - calculateLines off: only byte counts are needed.
- */
-const baseOptions = {
-    offline: true,
-    categories: ['programming', 'markup'],
-    calculateLines: false,
-};
-/**
- * Detects the languages of the LOCAL working tree with linguist-js, returning
- * the same {LanguageName: bytes} map the GitHub /languages API returns.
- *
- * Real Linguist (and therefore linguist-js) marks everything under `.github/`
- * as vendored, but for CodeQL purposes code living in .github (helper scripts,
- * composite actions) MUST count. Mechanism: two passes —
- *  1. the repository root with default vendor rules (.github/, node_modules/,
- *     vendor/, dist/... excluded);
- *  2. a second pass ROOTED AT `.github/` itself: paths become relative to
- *     .github (e.g. `workflows/ci.yml`), so the `(^|/)\.github/` vendor rule
- *     no longer matches, while every other vendor rule (e.g. node_modules/
- *     nested inside .github) still applies.
- * The passes are merged per FILE (union keyed on the absolute file path, so
- * nothing can ever be double-counted), then byte counts are summed per
- * language from the file sizes — the same blob-byte semantics the GitHub
- * /languages API uses.
- */
-async function detectLocalLanguages(rootDir) {
-    const linguist = (await Promise.resolve(/* import() */).then(__nccwpck_require__.t.bind(__nccwpck_require__, 38, 23))).default;
-    // absolute file path -> language name
-    const fileLanguages = {};
-    const addPass = (pass) => {
-        // languages.results is already category-filtered (programming+markup);
-        // files.results is not — keep only files whose language survived.
-        const kept = new Set(Object.keys(pass.languages.results));
-        for (const [file, language] of Object.entries(pass.files.results)) {
-            if (language && kept.has(language)) {
-                fileLanguages[file] = language;
-            }
-        }
-    };
-    addPass(await linguist.analyseFolders([rootDir], baseOptions));
-    const githubDir = path.join(rootDir, '.github');
-    if (fs.existsSync(githubDir) && fs.lstatSync(githubDir).isDirectory()) {
-        addPass(await linguist.analyseFolders([githubDir], baseOptions));
-    }
-    const merged = {};
-    for (const [file, language] of Object.entries(fileLanguages)) {
-        let bytes;
-        try {
-            bytes = fs.statSync(file).size;
-        }
-        catch {
-            continue; // file vanished between analysis and stat — skip it
-        }
-        merged[language] = (merged[language] ?? 0) + bytes;
-    }
-    return merged;
-}
-
-
-/***/ }),
-
 /***/ 9786:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -35688,8 +35482,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = run;
 const core = __importStar(__nccwpck_require__(7484));
 const github = __importStar(__nccwpck_require__(3228));
-const linguist_1 = __nccwpck_require__(3694);
-const fsscan_1 = __nccwpck_require__(8177);
 /**
  * The main function for the action.
  *
@@ -35700,20 +35492,6 @@ async function run() {
         const token = core.getInput('github_token');
         const owner = core.getInput('owner');
         const repo = core.getInput('repo');
-        // How languages are detected:
-        // - linguist (default since v4): analyse the LOCAL checkout with linguist-js.
-        //   Requires actions/checkout to have run first; makes zero GitHub API calls.
-        // - gh-api: call the GitHub /languages API (the v3 behaviour).
-        const detectionMethod = (core.getInput('detection_method') || 'linguist').toLowerCase();
-        if (detectionMethod !== 'linguist' && detectionMethod !== 'gh-api') {
-            throw new Error(`Invalid detection_method ${detectionMethod}. Valid values are linguist, gh-api`);
-        }
-        // When true, any computed CodeQL language with no matching file (by
-        // extension) in the local checkout is dropped from the matrix.
-        // Requires actions/checkout to have run first.
-        const pruneUndetectedLanguages = core.getBooleanInput('prune_undetected_languages');
-        // Root of the local checkout used by linguist detection and pruning.
-        const workspaceDir = process.env.GITHUB_WORKSPACE || process.cwd();
         // Languages that are supported by CodeQL, mapping between the Github API output and the accepted CodeQL Input
         const codeqlLanguageMapping = {
             // https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning#changing-the-languages-that-are-analyzed
@@ -35858,45 +35636,27 @@ async function run() {
             "ruby": core.getInput('envvars_ruby') ? JSON.parse(core.getInput('envvars_ruby')) : {},
             "swift": core.getInput('envvars_swift') ? JSON.parse(core.getInput('envvars_swift')) : {},
         };
-        let languages;
-        if (detectionMethod === 'linguist') {
-            // Local detection: linguist-js over the checkout. The result is the same
-            // {LanguageName: bytes} map the GitHub /languages API returns (same
-            // names — both derive from linguist's languages.yml), so everything
-            // downstream (CodeQL mapping, force/skip, html) is method-agnostic.
-            // Zero GitHub API calls are made on this path.
-            const languageBytes = await (0, linguist_1.detectLocalLanguages)(workspaceDir);
-            core.debug(JSON.stringify({ languageBytes }));
-            languages = Object.keys(languageBytes);
-            // `actions` pseudo-language: detected from the filesystem — any
-            // .yml / .yaml file under .github/workflows in the checkout.
-            if ((0, fsscan_1.hasWorkflowYaml)(workspaceDir)) {
-                languages.push('actions');
-            }
-        }
-        else {
-            const octokit = github.getOctokit(token);
-            const langResponse = await octokit.request(`GET /repos/${owner}/${repo}/languages`);
-            core.debug(JSON.stringify({ langResponse }));
-            languages = Object.keys(langResponse.data);
-            // Detect GitHub Actions workflows manually — the /languages endpoint
-            // (Linguist) does not classify workflow YAML as the CodeQL `actions`
-            // language. If the repo has any .yml / .yaml files under .github/workflows,
-            // we inject the pseudo-language `actions` into the matrix so CodeQL can
-            // scan the workflow files themselves (the same coverage GitHub's default
-            // setup provides via `languages: ["actions"]`).
-            try {
-                const workflowDir = await octokit.rest.repos.getContent({ owner, repo, path: '.github/workflows' });
-                if (Array.isArray(workflowDir.data)) {
-                    const hasWorkflowYamlFiles = workflowDir.data.some(f => f.type === 'file' && /\.ya?ml$/i.test(f.name));
-                    if (hasWorkflowYamlFiles) {
-                        languages.push('actions');
-                    }
+        const octokit = github.getOctokit(token);
+        const langResponse = await octokit.request(`GET /repos/${owner}/${repo}/languages`);
+        core.debug(JSON.stringify({ langResponse }));
+        let languages = Object.keys(langResponse.data);
+        // Detect GitHub Actions workflows manually — the /languages endpoint
+        // (Linguist) does not classify workflow YAML as the CodeQL `actions`
+        // language. If the repo has any .yml / .yaml files under .github/workflows,
+        // we inject the pseudo-language `actions` into the matrix so CodeQL can
+        // scan the workflow files themselves (the same coverage GitHub's default
+        // setup provides via `languages: ["actions"]`).
+        try {
+            const workflowDir = await octokit.rest.repos.getContent({ owner, repo, path: '.github/workflows' });
+            if (Array.isArray(workflowDir.data)) {
+                const hasWorkflowYaml = workflowDir.data.some(f => f.type === 'file' && /\.ya?ml$/i.test(f.name));
+                if (hasWorkflowYaml) {
+                    languages.push('actions');
                 }
             }
-            catch {
-                // No .github/workflows directory (or inaccessible) — skip actions scanning
-            }
+        }
+        catch {
+            // No .github/workflows directory (or inaccessible) — skip actions scanning
         }
         let languages_codeql_format = Array.from(new Set(languages
             .map(l => codeqlLanguageMapping[l.toLowerCase()])
@@ -35908,40 +35668,6 @@ async function run() {
             .map(l => codeqlLanguageMapping[l] || l)
             .filter(l => l && !skipLanguages.includes(l));
         languages_codeql_format = Array.from(new Set([...languages_codeql_format, ...forcedCodeqlLangs]));
-        // Optionally drop CodeQL languages that have zero matching files (by
-        // extension) in the local checkout — protects against stale /languages
-        // data (deleted code) and over-eager force_languages. `actions` is checked
-        // via .github/workflows/*.yml|yaml; unknown ids are kept.
-        if (pruneUndetectedLanguages) {
-            const codeqlFileExtensions = {
-                "python": ['.py'],
-                "javascript-typescript": ['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx', '.html', '.htm', '.xhtml', '.vue', '.hbs'],
-                "go": ['.go'],
-                "java-kotlin": ['.java', '.kt', '.kts'],
-                "csharp": ['.cs'],
-                "c-cpp": ['.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx'],
-                "ruby": ['.rb'],
-                "swift": ['.swift'],
-            };
-            const presentExtensions = (0, fsscan_1.collectExtensions)(workspaceDir);
-            languages_codeql_format = languages_codeql_format.filter(language => {
-                let present;
-                if (language === 'actions') {
-                    present = (0, fsscan_1.hasWorkflowYaml)(workspaceDir);
-                }
-                else if (codeqlFileExtensions[language]) {
-                    present = codeqlFileExtensions[language].some(ext => presentExtensions.has(ext));
-                }
-                else {
-                    // Unknown CodeQL id — no extension mapping, keep it.
-                    return true;
-                }
-                if (!present) {
-                    core.warning(`${language} listed but no matching files found in the checkout — removed from CodeQL analysis`);
-                }
-                return present;
-            });
-        }
         let languages_codeql_output = languages_codeql_format.map(language => ({
             language: language,
             "build-mode": codeqlBuildmodeMapping[language],
@@ -36020,14 +35746,6 @@ module.exports = require("http");
 
 "use strict";
 module.exports = require("https");
-
-/***/ }),
-
-/***/ 38:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("linguist-js");
 
 /***/ }),
 
@@ -36280,64 +35998,6 @@ module.exports = require("util");
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/create fake namespace object */
-/******/ 	(() => {
-/******/ 		var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
-/******/ 		var leafPrototypes;
-/******/ 		// create a fake namespace object
-/******/ 		// mode & 1: value is a module id, require it
-/******/ 		// mode & 2: merge all properties of value into the ns
-/******/ 		// mode & 4: return value when already ns object
-/******/ 		// mode & 16: return value when it's Promise-like
-/******/ 		// mode & 8|1: behave like require
-/******/ 		__nccwpck_require__.t = function(value, mode) {
-/******/ 			if(mode & 1) value = this(value);
-/******/ 			if(mode & 8) return value;
-/******/ 			if(typeof value === 'object' && value) {
-/******/ 				if((mode & 4) && value.__esModule) return value;
-/******/ 				if((mode & 16) && typeof value.then === 'function') return value;
-/******/ 			}
-/******/ 			var ns = Object.create(null);
-/******/ 			__nccwpck_require__.r(ns);
-/******/ 			var def = {};
-/******/ 			leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
-/******/ 			for(var current = mode & 2 && value; typeof current == 'object' && !~leafPrototypes.indexOf(current); current = getProto(current)) {
-/******/ 				Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
-/******/ 			}
-/******/ 			def['default'] = () => (value);
-/******/ 			__nccwpck_require__.d(ns, def);
-/******/ 			return ns;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__nccwpck_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	(() => {
-/******/ 		// define __esModule on exports
-/******/ 		__nccwpck_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";

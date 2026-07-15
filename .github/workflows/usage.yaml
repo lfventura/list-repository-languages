@@ -7,8 +7,11 @@ on:
 permissions:
   contents: read
 
+# Note: outputs may legitimately differ between methods on .github-only
+# languages (linguist counts code under .github/, the gh-api does not).
 jobs:
-  run:
+  print_gh_api:
+    name: Print Languages (gh-api)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -31,25 +34,42 @@ jobs:
         id: gh_api
         with:
           detection_method: gh-api
-        # with:
-        #   github_token: ${{ secrets.GITHUB_TOKEN }}
-        #   owner: lfventura
-        #   repo: list-repository-languages
 
-      - uses: ./
-        id: linguist
-        with:
-          detection_method: linguist
-
-      # Note: outputs may legitimately differ between methods on .github-only
-      # languages (linguist counts code under .github/, the gh-api does not).
-      - name: Print languages from both detection methods
+      - name: Print languages (gh-api)
         run: |
           echo "=== detection_method: gh-api ==="
           echo "Languages Repo: ${{ steps.gh_api.outputs.languages_repo }}"
           echo "Languages CodeQL: ${{ steps.gh_api.outputs.languages_codeql }}"
           echo "Languages CodeQL With BuildMode: ${{ steps.gh_api.outputs.languages_codeql_w_buildmode }}"
           echo "CodeQL Supported: ${{ steps.gh_api.outputs.codeql_supported }}"
+
+  print_linguist:
+    name: Print Languages (linguist)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # dist/ on branches is stale by design (the Release workflow is the only
+      # dist producer), so build the action from this PR's source before self-use.
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build action from source
+        run: npm run build
+
+      - uses: ./
+        id: linguist
+        with:
+          detection_method: linguist
+
+      - name: Print languages (linguist)
+        run: |
           echo "=== detection_method: linguist ==="
           echo "Languages Repo: ${{ steps.linguist.outputs.languages_repo }}"
           echo "Languages CodeQL: ${{ steps.linguist.outputs.languages_codeql }}"

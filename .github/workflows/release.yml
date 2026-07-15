@@ -84,7 +84,8 @@ jobs:
         env:
           NEW_VERSION: ${{ steps.version.outputs.new_version }}
         run: |
-          # dist is gitignored on main; force-add it into the release commit only.
+          # dist is gitignored (prevents accidental adds in PRs); the release
+          # workflow is the only writer and force-adds it.
           git add -f dist
           git add package.json package-lock.json
           git diff --staged --quiet || git commit -m "chore(release): ${NEW_VERSION}"
@@ -94,10 +95,13 @@ jobs:
           NEW_VERSION: ${{ steps.version.outputs.new_version }}
         run: git tag "${NEW_VERSION}"
 
-      - name: Push tag (release commit carries dist; main stays source-only)
+      - name: Push release commit (dist + version) to main and tag
         env:
           NEW_VERSION: ${{ steps.version.outputs.new_version }}
-        run: git push origin "${NEW_VERSION}"
+        # The release workflow is the only writer of dist/: the release commit
+        # (dist + version bump) lands on main together with the tag, so
+        # dist@main always matches the latest release.
+        run: git push origin HEAD:main "${NEW_VERSION}"
 
       - name: Create GitHub release
         env:

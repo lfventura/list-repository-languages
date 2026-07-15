@@ -17,14 +17,15 @@ The two `detection_method` values look at different things, so they can legitima
 - `linguist` mode counts code under `.github/` **by design** (helper scripts, composite actions), while the GitHub API always excludes `.github/` as vendored. A repository whose only shell script lives in `.github/` reports `Shell` in linguist mode but not via `gh-api`.
 - `linguist_exclude_folders` can only filter `linguist` detection (and the `prune_undetected_languages` file scan) — it **cannot** affect the aggregated statistics the GitHub `/languages` API returns, so with `gh-api` the language set stays unfiltered (a warning is emitted).
 
-## Repository layout: source-only `main`
+## Repository layout: `dist/` on `main`, written only by the Release workflow
 
-`main` contains **only source** — the compiled `dist/` bundle is not committed to it. The [Release workflow](.github/workflows/release.yml) builds `dist/` and commits it **only in the release tag commit**: the tag alone is pushed, so `main` never receives that commit.
+`main` **carries** the compiled `dist/` bundle, but it is generated **exclusively by the [Release workflow](.github/workflows/release.yml)**: each release builds `dist/`, commits it together with the version bump, and pushes that commit to `main` plus the release tag. Pull requests must **not** add or modify `dist/` — the `dist_guard` CI job in [Build & Test](.github/workflows/build_test.yaml) fails any PR that does.
 
 Consequences:
 
-- Consumers **must pin a release tag or its commit SHA**, e.g. `lfventura/list-repository-languages@v4.0.0`. Pinning `@main` will **not** work — `main` has no `dist/index.js`, the action's entry point.
-- This repository's own CI workflows that self-use the action build it from source first (`npm ci && npm run build`) before invoking it.
+- `dist/` on `main` always corresponds to the **latest release**. Between a source merge and the next release, `dist/` intentionally still reflects the previous release — `@main` behaves like the latest release, not like unreleased source.
+- Recommended consumption remains a **pinned release tag or its commit SHA**, e.g. `lfventura/list-repository-languages@v4.0.0`. Pinning `@main` works (it resolves to the latest released `dist/`), but tags give reproducible, auditable upgrades.
+- This repository's own CI workflows that self-use the action build it from source first (`npm ci && npm run build`), so they exercise the PR's source rather than the released bundle.
 
 ## Usage
 Create a workflow (eg: `.github/workflows/seat-count.yml`). See [Creating a Workflow file](https://help.github.com/en/articles/configuring-a-workflow#creating-a-workflow-file).

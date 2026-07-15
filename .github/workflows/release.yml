@@ -84,7 +84,9 @@ jobs:
         env:
           NEW_VERSION: ${{ steps.version.outputs.new_version }}
         run: |
-          git add dist package.json package-lock.json
+          # dist is gitignored on main; force-add it into the release commit only.
+          git add -f dist
+          git add package.json package-lock.json
           git diff --staged --quiet || git commit -m "chore(release): ${NEW_VERSION}"
 
       - name: Create git tag
@@ -92,10 +94,10 @@ jobs:
           NEW_VERSION: ${{ steps.version.outputs.new_version }}
         run: git tag "${NEW_VERSION}"
 
-      - name: Push commit and tag
+      - name: Push tag (release commit carries dist; main stays source-only)
         env:
           NEW_VERSION: ${{ steps.version.outputs.new_version }}
-        run: git push origin HEAD:main "${NEW_VERSION}"
+        run: git push origin "${NEW_VERSION}"
 
       - name: Create GitHub release
         env:

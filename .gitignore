@@ -1,7 +1,5 @@
 .DS_Store
 node_modules
-# dist/node_modules carries the vendored linguist-js runtime (see scripts/vendor-linguist.cjs)
-!dist/node_modules
-!dist/node_modules/**
+dist/
 .env
 .env.*

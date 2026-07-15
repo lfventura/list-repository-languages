@@ -1,10 +1,10 @@
 {
   "name": "action-typescript",
-  "version": "3.3.0",
+  "version": "4.0.0",
   "description": "GitHub Actions TypeScript template",
   "main": "dist/index.js",
   "scripts": {
-    "build": "ncc build src/index.ts",
+    "build": "ncc build src/index.ts -e linguist-js && node scripts/vendor-linguist.cjs",
     "test": "jest",
     "lint": "eslint src/**/*.ts",
     "dev": "ts-node-dev --respawn src/index.ts",
@@ -25,10 +25,12 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "1.11.1",
-    "@actions/github": "6.0.1"
+    "@actions/github": "6.0.1",
+    "linguist-js": "3.0.2"
   },
   "devDependencies": {
     "@github/local-action": "github:github/local-action#ba80dbc372f776d05ae3a16505865a66c1cea83b",
+    "@types/js-yaml": "4.0.9",
     "@types/node": "24.12.2",
     "@typescript-eslint/eslint-plugin": "8.58.2",
     "@typescript-eslint/parser": "8.58.2",

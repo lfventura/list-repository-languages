@@ -9,6 +9,22 @@ A GitHub [Action](https://docs.github.com/en/actions) that outputs the repositor
 - Unlike GitHub's Linguist (which treats `.github/` as vendored), linguist mode **counts code under `.github/`** (helper scripts, composite actions), so CodeQL can cover it.
 - In linguist mode the `actions` pseudo-language is detected from the filesystem (`.github/workflows/*.yml|yaml`) instead of the Contents API.
 
+### Why the two detection methods can report different language sets
+
+The two `detection_method` values look at different things, so they can legitimately disagree:
+
+- `gh-api` reflects the repository's **default branch**: it returns the Linguist statistics GitHub last computed for that branch. `linguist` analyses the **checked-out ref**. On a pull request that adds or removes a language's files, the two methods diverge until the PR is merged (and GitHub recomputes its stats) — that is expected, not a bug.
+- `linguist` mode counts code under `.github/` **by design** (helper scripts, composite actions), while the GitHub API always excludes `.github/` as vendored. A repository whose only shell script lives in `.github/` reports `Shell` in linguist mode but not via `gh-api`.
+
+## Repository layout: source-only `main`
+
+`main` contains **only source** — the compiled `dist/` bundle is not committed to it. The [Release workflow](.github/workflows/release.yml) builds `dist/` and commits it **only in the release tag commit**: the tag alone is pushed, so `main` never receives that commit.
+
+Consequences:
+
+- Consumers **must pin a release tag or its commit SHA**, e.g. `lfventura/list-repository-languages@v4.0.0`. Pinning `@main` will **not** work — `main` has no `dist/index.js`, the action's entry point.
+- This repository's own CI workflows that self-use the action build it from source first (`npm ci && npm run build`) before invoking it.
+
 ## Usage
 Create a workflow (eg: `.github/workflows/seat-count.yml`). See [Creating a Workflow file](https://help.github.com/en/articles/configuring-a-workflow#creating-a-workflow-file).
 
@@ -24,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4 # required by detection_method: linguist (the default)
-      - uses: lfventura/list-repository-languages@main
+      - uses: lfventura/list-repository-languages@v4.0.0
         id: list-languages
       - run: echo ${{ join(fromJSON(steps.list-languages.outputs.languages_repo), ', ') }}
 ```
@@ -39,7 +55,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: lfventura/list-repository-languages@main
+      - uses: lfventura/list-repository-languages@v4.0.0
         id: list-languages
     outputs:
       languages_codeql: ${{ steps.list-languages.outputs.languages_codeql }}
@@ -56,7 +72,7 @@ jobs:
 ### CodeQL
 You can use the output `languages_codeql` to map languages to codeql supported languages. [example](https://github.com/lfventura/.github/blob/main/.github/workflows/codeql.yml).
 ```yml
-      - uses: lfventura/list-repository-languages@main
+      - uses: lfventura/list-repository-languages@v4.0.0
         id: list-languages
 ```
 
